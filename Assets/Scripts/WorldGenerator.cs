@@ -61,10 +61,8 @@ namespace Assembly_CSharp
                 // Keep track of which weight is strongest.
                 if (weight > strongestWeight)
                 {
-
                     strongestWeight = weight;
                     strongestBiomeIndex = i;
-
                 }
 
                 // Get the height of the terrain (for the current biome) and multiply it by its weight.

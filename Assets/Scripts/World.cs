@@ -8,6 +8,7 @@ using Assets.Scripts;
 using System;
 using System.Collections.Concurrent;
 using UnityEngine.SceneManagement;
+using System.Linq;
 
 public class World : MonoBehaviour
 {
@@ -39,7 +40,25 @@ public class World : MonoBehaviour
     private BackgroundThread backgroundThread;
 
     public ConcurrentQueue<Chunk> chunksToDraw = new ConcurrentQueue<Chunk>();
-    public bool WorldIsReady { get; set; }
+    private bool _worldIsReady;
+    public bool WorldIsReady
+    {
+        get
+        {
+            if (!_worldIsReady)
+            {
+                var chunksInViewDistance = GetChunksInViewDistance();
+                _worldIsReady = chunksInViewDistance.All(l => chunks[l.x, l.z].IsRendered);
+                return _worldIsReady;
+            }
+            else
+            {
+                return _worldIsReady;
+            }
+
+        }
+        private set { _worldIsReady = value; }
+    }
 
     private bool _inUI = false;
 
@@ -76,6 +95,8 @@ public class World : MonoBehaviour
         _player = player.GetComponent<Player>();
         backgroundThread = new BackgroundThread();
 
+        spawnPosition = new Vector3(VoxelData.WorldCentre, VoxelData.ChunkHeight - 50f, VoxelData.WorldCentre);
+        player.position = spawnPosition;
     }
 
     private void Start()
@@ -84,7 +105,7 @@ public class World : MonoBehaviour
         Debug.Log("Generating new world using seed " + VoxelData.seed);
 
         worldData = SaveSystem.LoadWorld("Testing");
-     
+
 
         //string jsonExport = JsonUtility.ToJson(settings);
         //Debug.Log(jsonExport);
@@ -106,16 +127,14 @@ public class World : MonoBehaviour
         backgroundThread.Start();
 
         SetGlobalLightValue();
-        spawnPosition = new Vector3(VoxelData.WorldCentre, VoxelData.ChunkHeight - 50f, VoxelData.WorldCentre);
-        player.position = spawnPosition;
-        CheckViewDistance();
+      
+        UpdateChunksInViewDistance();
         playerLastChunkCoord = GetChunkCoordFromVector3(player.position);
 
-        
+
 
         StartCoroutine(Tick());
 
-        WorldIsReady = true;
     }
 
     public void SetGlobalLightValue()
@@ -147,15 +166,15 @@ public class World : MonoBehaviour
 
         // Only update the chunks if the player has moved from the chunk they were previously on.
         if (!playerChunkCoord.Equals(playerLastChunkCoord))
-            CheckViewDistance();
+            UpdateChunksInViewDistance();
 
         if (chunksToDraw.Count > 0)
         {
             Chunk result;
-            if(chunksToDraw.TryDequeue(out result))
+            if (chunksToDraw.TryDequeue(out result))
             {
                 result.CreateMesh();
-            }    
+            }
         }
 
 
@@ -165,8 +184,8 @@ public class World : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F1))
             SaveSystem.SaveWorld(worldData);
 
-       
-            
+
+
 
     }
 
@@ -220,12 +239,12 @@ public class World : MonoBehaviour
 
     }
 
-    void CheckViewDistance()
+    void UpdateChunksInViewDistance()
     {
 
         clouds.UpdateClouds();
 
-        ChunkCoord coord = GetChunkCoordFromVector3(player.position);
+
         playerLastChunkCoord = playerChunkCoord;
 
         ConcurrentUniqueQueue<ChunkCoord> previouslyActiveChunks = ActiveChunks.DeepCopy();
@@ -233,31 +252,26 @@ public class World : MonoBehaviour
         ActiveChunks.Clear();
 
         // Loop through all chunks currently within view distance of the player.
-        for (int x = coord.x - settings.viewDistance; x < coord.x + settings.viewDistance; x++)
+
+        foreach (var chunkCoord in GetChunksInViewDistance())
         {
-            for (int z = coord.z - settings.viewDistance; z < coord.z + settings.viewDistance; z++)
+
+            // If the current chunk is in the world...
+            if (IsChunkInWorld(chunkCoord))
             {
 
-                ChunkCoord thisChunkCoord = new ChunkCoord(x, z);
+                // Check if it active, if not, activate it.
+                if (chunks[chunkCoord.x, chunkCoord.z] == null)
+                    chunks[chunkCoord.x, chunkCoord.z] = new Chunk(chunkCoord);
 
-                // If the current chunk is in the world...
-                if (IsChunkInWorld(thisChunkCoord))
-                {
+                chunks[chunkCoord.x, chunkCoord.z].isActive = true;
+                ActiveChunks.TryEnqueue(chunkCoord);
+            }
 
-                    // Check if it active, if not, activate it.
-                    if (chunks[x, z] == null)
-                        chunks[x, z] = new Chunk(thisChunkCoord);
-
-                    chunks[x, z].isActive = true;
-                    ActiveChunks.TryEnqueue(thisChunkCoord);
-                }
-
-                // Check through previously active chunks to see if this chunk is there. If it is, remove it from the list.
-                for (int i = 0; i < previouslyActiveChunks.Count; i++)
-                {
-                    previouslyActiveChunks.TryRemove(thisChunkCoord);
-
-                }
+            // Check through previously active chunks to see if this chunk is there. If it is, remove it from the list.
+            for (int i = 0; i < previouslyActiveChunks.Count; i++)
+            {
+                previouslyActiveChunks.TryRemove(chunkCoord);
 
             }
         }
@@ -266,12 +280,26 @@ public class World : MonoBehaviour
         previouslyActiveChunks.DoActionOnAllMembers(l => chunks[l.x, l.z].isActive = false);
     }
 
+    public List<ChunkCoord> GetChunksInViewDistance()
+    {
+        ChunkCoord coord = GetChunkCoordFromVector3(player.position);
+        var chunksInViewDistance = new List<ChunkCoord>();
+        for (int x = coord.x - settings.viewDistance; x < coord.x + settings.viewDistance; x++)
+        {
+            for (int z = coord.z - settings.viewDistance; z < coord.z + settings.viewDistance; z++)
+            {
+                chunksInViewDistance.Add(new ChunkCoord(x,z));
+            }
+        }
+        return chunksInViewDistance;
+    }
+
     public bool CheckForVoxel(Vector3 pos)
     {
 
         var voxel = worldData.GetVoxel(pos);
 
-        if(voxel == null)
+        if (voxel == null)
         {
             return false;
         }
@@ -316,7 +344,7 @@ public class World : MonoBehaviour
         }
 
     }
-        
+
 
     bool IsChunkInWorld(ChunkCoord coord)
     {

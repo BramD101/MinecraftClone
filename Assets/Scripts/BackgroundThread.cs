@@ -13,9 +13,6 @@ namespace Assets.Scripts
     {
         private WorldData _worldData;
         private ConcurrentUniqueQueue<ChunkCoord> _activeChunks;
-        private Clouds _clouds;
-        private Chunk[,] _chunks;
-
 
         private Thread thread;
         internal void Abort()
@@ -91,50 +88,7 @@ namespace Assets.Scripts
 
 
 
-        void CheckViewDistance(UnityEngine.Vector3 playerPosition)
-        {
-
-            _clouds.UpdateClouds();
-
-            ChunkCoord coord = new ChunkCoord(playerPosition);
-
-
-            ConcurrentUniqueQueue<ChunkCoord> previouslyActiveChunks = _activeChunks.DeepCopy();
-
-            _activeChunks.Clear();
-            
-            // Loop through all chunks currently within view distance of the player.
-            for (int x = coord.x - World.Instance.settings.viewDistance; x < coord.x + World.Instance.settings.viewDistance; x++)
-            {
-                for (int z = coord.z - World.Instance.settings.viewDistance; z < coord.z + World.Instance.settings.viewDistance; z++)
-                {
-
-                    ChunkCoord thisChunkCoord = new ChunkCoord(x, z);
-
-                    // If the current chunk is in the world...
-                    if (IsChunkInWorld(thisChunkCoord))
-                    {
-                        
-                        // Check if it active, if not, activate it.
-                        if (_chunks[x, z] == null)
-                            _chunks[x, z] = new Chunk(thisChunkCoord);
-
-                        _chunks[x, z].isActive = true;
-                        _activeChunks.TryEnqueue(thisChunkCoord);
-                    }
-
-                    // Check through previously active chunks to see if this chunk is there. If it is, remove it from the list.
-
-                    previouslyActiveChunks.TryRemove(thisChunkCoord);
-
-
-
-                }
-            }
-
-            // Any chunks left in the previousActiveChunks list are no longer in the player's view distance, so loop through and disable them.
-            previouslyActiveChunks.DoActionOnAllMembers(l => _chunks[l.x, l.z].isActive = false);
-        }
+     
 
         bool IsChunkInWorld(ChunkCoord coord)
         {

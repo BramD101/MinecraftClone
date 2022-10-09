@@ -50,6 +50,8 @@ public class Chunk {
         chunkData = World.Instance.worldData.RequestChunk(new Vector2Int((int)position.x, (int)position.z), true);
         chunkData.chunk = this;
 
+        IsRendered = false;
+
 		for (int y = 0; y < VoxelData.ChunkHeight; y++) {
 			for (int x = 0; x < VoxelData.ChunkWidth; x++) {
 				for (int z = 0; z < VoxelData.ChunkWidth; z++) {
@@ -130,7 +132,7 @@ public class Chunk {
         uvs.Clear();
         colors.Clear();
         normals.Clear();
-
+        IsRendered = false;
     }
 
     public bool isActive {
@@ -145,6 +147,8 @@ public class Chunk {
         }
 
     }
+
+    public bool IsRendered { get; internal set; }
 
     public void EditVoxel (Vector3 pos, byte newID) {
 
@@ -302,6 +306,7 @@ public class Chunk {
 
 		meshFilter.mesh = mesh;
 
+        IsRendered = true;
 	}
 
     void AddTexture (int textureID, Vector2 uv) {
