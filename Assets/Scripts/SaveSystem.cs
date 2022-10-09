@@ -89,7 +89,7 @@ public static class SaveSystem
     public static void SaveChunk(ChunkData chunk, string worldName)
     {
 
-        string chunkName = chunk.position.x + "-" + chunk.position.y;
+        string chunkName = chunk.Position.x + "-" + chunk.Position.z;
 
         // Set our save location and make sure we have a saves folder ready to go.
         string savePath = World.Instance.appPath + "/saves/" + worldName + "/chunks/";
@@ -106,10 +106,10 @@ public static class SaveSystem
 
     }
 
-    public static ChunkData LoadChunk(string worldName, Vector2Int position)
+    public static ChunkData LoadChunk(string worldName, ChunkCoord position)
     {
 
-        string chunkName = position.x + "-" + position.y;
+        string chunkName = position.x + "-" + position.z;
 
         string loadPath = World.Instance.appPath + "/saves/" + worldName + "/chunks/" + chunkName + ".chunk";
 

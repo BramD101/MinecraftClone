@@ -12,7 +12,7 @@ public class WorldData : IDeserializationCallback
     public int seed;
 
     [System.NonSerialized]
-    public Dictionary<Vector2Int, ChunkData> chunks = new ();
+    public Dictionary<ChunkCoord, ChunkData> chunks = new ();
 
     [System.NonSerialized]
     public List<ChunkData> modifiedChunks = new();
@@ -31,9 +31,12 @@ public class WorldData : IDeserializationCallback
 
     }
 
-    
 
-    public ChunkData RequestChunk (Vector2Int coord, bool create) {
+    public ChunkData RequestChunk(int x, int z, bool create)
+    {
+        return RequestChunk(new ChunkCoord(x, z), create);
+    }
+    public ChunkData RequestChunk (ChunkCoord coord, bool create) {
 
         ChunkData c;
 
@@ -56,7 +59,7 @@ public class WorldData : IDeserializationCallback
 
     }
 
-    public bool LoadChunk (Vector2Int coord) {
+    public bool LoadChunk (ChunkCoord coord) {
 
         if (chunks.ContainsKey(coord))
             return false;
@@ -70,13 +73,13 @@ public class WorldData : IDeserializationCallback
 
        
     }
-    public void CreateChunk(Vector2Int coord)
+    public void CreateChunk(ChunkCoord coord)
     {
         if (chunks.ContainsKey(coord))
             return;
 
         chunks.Add(coord, new ChunkData(coord));
-        chunks[coord].Populate();
+       
     }
 
 
@@ -99,15 +102,11 @@ public class WorldData : IDeserializationCallback
         int x = Mathf.FloorToInt(pos.x / VoxelData.ChunkWidth);
         int z = Mathf.FloorToInt(pos.z / VoxelData.ChunkWidth);
 
-        // Then reverse that to get the position of the chunk.
-        x *= VoxelData.ChunkWidth;
-        z *= VoxelData.ChunkWidth;
-
         // Check if the chunk exists. If not, create it.
-        ChunkData chunk = RequestChunk(new Vector2Int(x, z), true);
+        ChunkData chunk = RequestChunk(new ChunkCoord(x, z), true);
 
         // Then create a Vector3Int with the position of our voxel *within* the chunk.
-        Vector3Int voxel = new Vector3Int((int)(pos.x - x), (int)pos.y, (int)(pos.z - z));
+        Vector3Int voxel = new Vector3Int((int)(pos.x - x* VoxelData.ChunkWidth), (int)pos.y, (int)(pos.z - z* VoxelData.ChunkWidth));
 
         // Then set the voxel in our chunk.
         chunk.ModifyVoxel(voxel, value, direction);
@@ -124,18 +123,15 @@ public class WorldData : IDeserializationCallback
         int x = Mathf.FloorToInt(pos.x / VoxelData.ChunkWidth);
         int z = Mathf.FloorToInt(pos.z / VoxelData.ChunkWidth);
 
-        // Then reverse that to get the position of the chunk.
-        x *= VoxelData.ChunkWidth;
-        z *= VoxelData.ChunkWidth;
-
+        
         // Check if the chunk exists. If not, create it.
-        ChunkData chunk = RequestChunk(new Vector2Int(x, z), false);
+        ChunkData chunk = RequestChunk(new ChunkCoord(x, z), false);
 
         if (chunk == null)
             return null;
 
         // Then create a Vector3Int with the position of our voxel *within* the chunk.
-        Vector3Int voxel = new Vector3Int((int)(pos.x - x), (int)pos.y, (int)(pos.z - z));
+        Vector3Int voxel = new Vector3Int((int)(pos.x - x* VoxelData.ChunkWidth), (int)pos.y, (int)(pos.z - z* VoxelData.ChunkWidth));
 
         // Then set the voxel in our chunk.
         return chunk.map[voxel.x, voxel.y, voxel.z];

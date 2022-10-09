@@ -25,16 +25,15 @@ public class Chunk
 
     public Vector3 position;
 
-    private bool _isActive;
 
     ChunkData chunkData;
 
     List<VoxelState> activeVoxels = new List<VoxelState>();
 
-    public Chunk(ChunkCoord _coord)
+    public Chunk(ChunkData _chunkData)
     {
 
-        coord = _coord;
+        coord = new ChunkCoord(_chunkData.Position.x,_chunkData.Position.z);
 
         chunkObject = new GameObject();
         meshFilter = chunkObject.AddComponent<MeshFilter>();
@@ -50,8 +49,7 @@ public class Chunk
         chunkObject.name = "Chunk " + coord.x + ", " + coord.z;
         position = chunkObject.transform.position;
 
-        chunkData = World.Instance.worldData.RequestChunk(new Vector2Int((int)position.x, (int)position.z), true);
-        chunkData.chunk = this;
+        chunkData = _chunkData;
 
         IsRendered = false;
 
@@ -155,20 +153,7 @@ public class Chunk
         }
     }
 
-    public bool isActive
-    {
-
-        get { return _isActive; }
-        set
-        {
-
-            _isActive = value;
-            if (chunkObject != null)
-                chunkObject.SetActive(value);
-
-        }
-
-    }
+   
 
     public bool IsRendered { get; internal set; }
 
@@ -376,9 +361,13 @@ public class Chunk
 
     }
 
+    public void SetActive(bool isActive)
+    {
+        chunkObject.SetActive(isActive);
+    }
 }
 
-public class ChunkCoord : IEquatable<ChunkCoord>
+public record ChunkCoord : IEquatable<ChunkCoord>
 {
 
     public int x;
@@ -389,7 +378,7 @@ public class ChunkCoord : IEquatable<ChunkCoord>
 
         x = 0;
         z = 0;
-
+        
     }
 
     public ChunkCoord(int _x, int _z)
@@ -408,17 +397,9 @@ public class ChunkCoord : IEquatable<ChunkCoord>
 
     }
 
-    public bool Equals(ChunkCoord other)
+    public override int GetHashCode()
     {
-
-        if (other == null)
-            return false;
-        else if (other.x == x && other.z == z)
-            return true;
-        else
-            return false;
-
+        return x.GetHashCode() + z.GetHashCode();
     }
-
-
+  
 }

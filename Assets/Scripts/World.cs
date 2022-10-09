@@ -31,7 +31,7 @@ public class World : MonoBehaviour
 
     public BlockType[] blocktypes;
 
-    Chunk[,] chunks = new Chunk[VoxelData.WorldSizeInChunks, VoxelData.WorldSizeInChunks];
+    //Chunk[,] chunks = new Chunk[VoxelData.WorldSizeInChunks, VoxelData.WorldSizeInChunks];
 
     public ConcurrentUniqueQueue<ChunkCoord> ActiveChunks = new ConcurrentUniqueQueue<ChunkCoord>();
     public ChunkCoord playerChunkCoord;
@@ -47,8 +47,9 @@ public class World : MonoBehaviour
         {
             if (!_worldIsReady)
             {
-                var chunksInViewDistance = GetChunksInViewDistance();
-                _worldIsReady = chunksInViewDistance.All(l => chunks[l.x, l.z].IsRendered);
+                List<ChunkCoord> chunksInViewDistance = GetChunksInViewDistance();
+                            
+                _worldIsReady = chunksInViewDistance.All(l => worldData.RequestChunk(l.x, l.z, false)?.chunk.IsRendered ?? false);
                 if (_worldIsReady)
                 {
                     Debug.Log($"World is ready, time = {Time.realtimeSinceStartup}s");
@@ -157,7 +158,8 @@ public class World : MonoBehaviour
 
         while (true)
         {
-            ActiveChunks.DoActionOnAllMembers(l => chunks[l.x, l.z].TickUpdate());
+            
+            ActiveChunks.DoActionOnAllMembers(l => worldData.RequestChunk(l.x, l.z, false)?.chunk.TickUpdate());
 
             yield return new WaitForSeconds(VoxelData.tickLength);
 
@@ -209,7 +211,7 @@ public class World : MonoBehaviour
                 for (int z = (VoxelData.WorldSizeInChunks / 2) - settings.loadDistance; z < (VoxelData.WorldSizeInChunks / 2) + settings.loadDistance; z++)
                 {
 
-                    worldData.LoadChunk(new Vector2Int(x, z));
+                    worldData.LoadChunk(new ChunkCoord(x, z));
 
                 }
             }
@@ -224,7 +226,7 @@ public class World : MonoBehaviour
                 for (int z = (VoxelData.WorldSizeInChunks / 2) - settings.loadDistance; z < (VoxelData.WorldSizeInChunks / 2) + settings.loadDistance; z++)
                 {
 
-                    worldData.CreateChunk(new Vector2Int(x, z));
+                    worldData.CreateChunk(new ChunkCoord(x, z));
 
                 }
             }
@@ -262,7 +264,7 @@ public class World : MonoBehaviour
 
         int x = Mathf.FloorToInt(pos.x / VoxelData.ChunkWidth);
         int z = Mathf.FloorToInt(pos.z / VoxelData.ChunkWidth);
-        return chunks[x, z];
+        return worldData.RequestChunk(x, z, false).chunk;
 
     }
 
@@ -287,11 +289,11 @@ public class World : MonoBehaviour
             if (IsChunkInWorld(chunkCoord))
             {
 
+                ChunkData ChunkData = worldData.RequestChunk(chunkCoord.x, chunkCoord.z, true);
                 // Check if it active, if not, activate it.
-                if (chunks[chunkCoord.x, chunkCoord.z] == null)
-                    chunks[chunkCoord.x, chunkCoord.z] = new Chunk(chunkCoord);
 
-                chunks[chunkCoord.x, chunkCoord.z].isActive = true;
+
+                ChunkData.IsActive = true;
                 ActiveChunks.TryEnqueue(chunkCoord);
             }
 
@@ -302,9 +304,9 @@ public class World : MonoBehaviour
 
             }
         }
-
+        
         // Any chunks left in the previousActiveChunks list are no longer in the player's view distance, so loop through and disable them.
-        previouslyActiveChunks.DoActionOnAllMembers(l => chunks[l.x, l.z].isActive = false);
+        previouslyActiveChunks.DoActionOnAllMembers(l => worldData.RequestChunk(l.x, l.z, false).IsActive = false);
     }
 
     public List<ChunkCoord> GetChunksInViewDistance()

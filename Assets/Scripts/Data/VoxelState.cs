@@ -111,7 +111,8 @@ public class VoxelState {
 
         get {
 
-            return new Vector3Int(position.x + chunkData.position.x, position.y, position.z + chunkData.position.y);
+            return new Vector3Int(position.x + chunkData.Position.x * VoxelData.ChunkWidth, 
+                position.y , position.z + chunkData.Position.z * VoxelData.ChunkWidth);
 
         }
 
@@ -178,7 +179,10 @@ public class VoxelState {
 public class VoxelNeighbours {
 
     public readonly VoxelState parent;
-    public VoxelNeighbours(VoxelState _parent) { parent = _parent; }
+    public VoxelNeighbours(VoxelState _parent) 
+    { 
+        parent = _parent;
+    }
 
     private VoxelState[] _neighbours = new VoxelState[6];
 
