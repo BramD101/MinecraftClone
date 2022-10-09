@@ -48,19 +48,15 @@ namespace Assets.Scripts
         {
             // temp
             while (true)
-            {              
-
-                if (_chunksToUpdate.Count > 0)
-                    UpdateChunks();
-                             
-
+            {             
+                      
                 AsyncTask result = null;
                 if(_eventBacklog.TryDequeue(out result))
                 {
                     result.Invoke();
                 }
 
-                if (_chunksToUpdate.Count == 0 && _eventBacklog.Count == 0)
+                if (_eventBacklog.Count == 0)
                 {
                     ResetEvent.WaitOne();
                 }
@@ -96,10 +92,17 @@ namespace Assets.Scripts
 
             public Queue<VoxelMod> VoxelMods { get; set; }
         }
+        public class UpdateChunkEventArgs : EventArgs
+        {
+            public UpdateChunkEventArgs()
+            {
+            }
 
-   
+        }
         
-     
+
+
+
 
         bool IsChunkInWorld(ChunkCoord coord)
         {
@@ -112,46 +115,18 @@ namespace Assets.Scripts
 
         }
 
-        public object ChunkUpdateThreadLock = new object();
-        private List<Chunk> _chunksToUpdate = new List<Chunk>();
-        public void AddChunkToUpdate(Chunk chunk)
+        public void EnQueueuChunkToUpdate(Chunk chunk)
         {
-
-            AddChunkToUpdate(chunk, false);
-
+            _eventBacklog.Enqueue(new AsyncTask(chunk, null, OnUpdateChunk));
+            ResetEvent.Set();
         }
-        public void AddChunkToUpdate(Chunk chunk, bool insert)
+        public void OnUpdateChunk(object sender,EventArgs args)
         {
-
-            // Lock list to ensure only one thing is using the list at a time.
-            lock (ChunkUpdateThreadLock)
-            {
-
-                // Make sure update list doesn't already contain chunk.
-                if (!_chunksToUpdate.Contains(chunk))
-                {
-                    // If insert is true, chunk gets inserted at the top of the list.
-                    if (insert)
-                        _chunksToUpdate.Insert(0, chunk);
-                    else
-                        _chunksToUpdate.Add(chunk);
-
-                }
-                ResetEvent.Set();
-            }
+            var chunk = sender as Chunk;
+            _activeChunks.TryEnqueue(chunk.coord);
+            chunk.UpdateChunk();
         }
-        void UpdateChunks()
-        {
-            lock (ChunkUpdateThreadLock)
-            {
 
-                _chunksToUpdate[0].UpdateChunk();
-
-                _activeChunks.TryEnqueue(_chunksToUpdate[0].coord);
-                _chunksToUpdate.RemoveAt(0);
-                ResetEvent.Set();
-            }
-        }
 
     }
 

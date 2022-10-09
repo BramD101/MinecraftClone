@@ -395,12 +395,9 @@ public class World : MonoBehaviour
     }
     public void AddChunkToUpdate(Chunk chunk)
     {
-        backgroundThread.AddChunkToUpdate(chunk);
+        backgroundThread.EnQueueuChunkToUpdate(chunk);
     }
-    public void AddChunkToUpdate(Chunk chunk, bool insert)
-    {
-        backgroundThread.AddChunkToUpdate(chunk, insert);
-    }
+  
 
     public void GenerateStructure(Queue<VoxelMod> structure)
     {
