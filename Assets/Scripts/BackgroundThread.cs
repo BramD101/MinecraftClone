@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,88 +7,98 @@ using System.Numerics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine.Assertions;
 
 namespace Assets.Scripts
 {
     internal class BackgroundThread
     {
         private WorldData _worldData;
+        public WorldData WorldData { set { _worldData = value; } }  
+
         private ConcurrentUniqueQueue<ChunkCoord> _activeChunks;
 
-        private Thread thread;
-        internal void Abort()
-        {
-            thread?.Abort();
-        }
+        private Thread _thread;
 
-        public static readonly AutoResetEvent ResetEvent = new AutoResetEvent(true);
+        private ConcurrentQueue<AsyncTask> _eventBacklog;
       
-        public void Init(WorldData worldData, ConcurrentUniqueQueue<ChunkCoord> activeChunks)
+        public static readonly AutoResetEvent ResetEvent = new AutoResetEvent(true);
+
+        public BackgroundThread(ConcurrentUniqueQueue<ChunkCoord> activeChunks)
         {
-            _worldData = worldData;
+            _eventBacklog = new ConcurrentQueue<AsyncTask>();
             _activeChunks = activeChunks;
         }
+
+      
         public void Start()
         {
-            thread = new Thread(new ThreadStart(Update));
-            thread.Start();
+            Assert.IsNotNull(_worldData);
+            Assert.IsNotNull(_activeChunks);
+
+            _thread = new Thread(new ThreadStart(Update));
+            _thread.Start();
         }
 
+        internal void Abort()
+        {
+            _thread?.Abort();
+        }
         void Update()
         {
             // temp
             while (true)
-            {
-
-                if(_modifications.Count > 0)
-                {
-                    ApplyModifications(_worldData);
-                }
-              
+            {              
 
                 if (_chunksToUpdate.Count > 0)
                     UpdateChunks();
+                             
 
-                if (_chunksToUpdate.Count == 0)
+                AsyncTask result = null;
+                if(_eventBacklog.TryDequeue(out result))
+                {
+                    result.Invoke();
+                }
+
+                if (_chunksToUpdate.Count == 0 && _eventBacklog.Count == 0)
                 {
                     ResetEvent.WaitOne();
                 }
-
             }
         }
-        public object ChunkModificationsThreadLock = new object();
-        Queue<Queue<VoxelMod>> _modifications = new Queue<Queue<VoxelMod>>();
         public void EnQueueModification(Queue<VoxelMod> mod)
         {
-            lock (ChunkModificationsThreadLock)
-            {
-                _modifications.Enqueue(mod);
-            }
 
+            _eventBacklog.Enqueue(new AsyncTask(_worldData,new ApplyModificationsEventArgs(mod), OnApplyModification));
+           
             ResetEvent.Set();
         }
 
-   
-        void ApplyModifications(WorldData worldData)
+        private void OnApplyModification(object objWorldData, EventArgs eventArgs)
         {
-            while (_modifications.Count > 0)
-            {
-                Queue<VoxelMod> queue;
-                lock (ChunkModificationsThreadLock)
-                {
-                    queue = _modifications.Dequeue();
-                }
-                while (queue.Count > 0)
-                {
-                    VoxelMod v = queue.Dequeue();
-                    worldData.SetVoxel(v.position, v.id, 1);
-                }
-            }
+            var args = (ApplyModificationsEventArgs)eventArgs;
+            var worldData = (WorldData)objWorldData;
 
+            var queue = args.VoxelMods;
+            while (queue.Count > 0)
+            {
+                VoxelMod v = queue.Dequeue();
+                worldData.SetVoxel(v.position, v.id, 1);
+            }
         }
 
+        public class ApplyModificationsEventArgs : EventArgs
+        {
+            public ApplyModificationsEventArgs(Queue<VoxelMod> voxelMods)
+            {
+                this.VoxelMods = voxelMods;
+            }
 
+            public Queue<VoxelMod> VoxelMods { get; set; }
+        }
 
+   
+        
      
 
         bool IsChunkInWorld(ChunkCoord coord)
@@ -143,5 +154,6 @@ namespace Assets.Scripts
         }
 
     }
+
 
 }

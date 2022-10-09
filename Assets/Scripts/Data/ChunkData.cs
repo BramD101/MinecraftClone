@@ -1,49 +1,67 @@
 ﻿using Assembly_CSharp;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.InteropServices.ComTypes;
+using System.Runtime.Serialization;
+using System.Text;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [System.Serializable]
-public class ChunkData {
+public class ChunkData
+{
 
     // The global position of the chunk. ie, (16, 16) NOT (1, 1). We want to be able to
     // access it as a Vector2Int, but Vector2Int's are not serialized so we won't be able
     // to save them. So we'll store them as ints.
     int x;
     int y;
-    public Vector2Int position {
+    public Vector2Int position
+    {
 
         get { return new Vector2Int(x, y); }
-        set {
+        set
+        {
 
             x = value.x;
             y = value.y;
 
         }
     }
-
-    public ChunkData (Vector2Int pos) { position = pos; }
-    public ChunkData (int _x, int _y) { x = _x; y = _y; }
+    public ChunkData()
+    {
+    }
+    public ChunkData(Vector2Int pos) { position = pos; }
+    public ChunkData(int _x, int _y) { x = _x; y = _y; }
 
     [System.NonSerialized] public Chunk chunk;
 
     [HideInInspector] // Displaying lots of data in the inspector slows it down even more so hide this one.
     public VoxelState[,,] map = new VoxelState[VoxelData.ChunkWidth, VoxelData.ChunkHeight, VoxelData.ChunkWidth];
 
-	public void Populate () {
-		
-		for (int y = 0; y < VoxelData.ChunkHeight; y++) {
-			for (int x = 0; x < VoxelData.ChunkWidth; x++) {
-				for (int z = 0; z < VoxelData.ChunkWidth; z++) {
+    public void Populate()
+    {
+
+        for (int y = 0; y < VoxelData.ChunkHeight; y++)
+        {
+            for (int x = 0; x < VoxelData.ChunkWidth; x++)
+            {
+                for (int z = 0; z < VoxelData.ChunkWidth; z++)
+                {
 
                     Vector3 voxelGlobalPos = new Vector3(x + position.x, y, z + position.y);
 
                     var voxelGenerationData = WorldGenerator.Instance.GenerateVoxel(voxelGlobalPos);
-                    World.Instance.GenerateStructure(voxelGenerationData.Structure);
+                    if (voxelGenerationData.Structure?.Count > 0)
+                    {
+                        World.Instance.GenerateStructure(voxelGenerationData.Structure);
+                    }
                     map[x, y, z] = new VoxelState(voxelGenerationData.VoxelType, this, new Vector3Int(x, y, z));
 
                     // Loop through each of the voxels neighbours and attempt to set them.
-                    for (int p = 0; p < 6; p++) {
+                    for (int p = 0; p < 6; p++)
+                    {
 
                         Vector3Int neighbourV3 = new Vector3Int(x, y, z) + VoxelData.faceChecks[p];
                         if (IsVoxelInChunk(neighbourV3)) // If in chunk, get voxel straight from map.
@@ -52,17 +70,18 @@ public class ChunkData {
                             map[x, y, z].neighbours[p] = World.Instance.worldData.GetVoxel(voxelGlobalPos + VoxelData.faceChecks[p]);
 
                     }
-    
-				}
-			}
-		}
+
+                }
+            }
+        }
 
         //Lighting.RecalculateNaturaLight(this);
         World.Instance.worldData.AddToModifiedChunkList(this);
 
-	}
+    }
 
-    public void ModifyVoxel (Vector3Int pos, byte _id, int direction) {
+    public void ModifyVoxel(Vector3Int pos, byte _id, int direction)
+    {
 
         // If we've somehow tried to change a block for the same block, just return.
         if (map[pos.x, pos.y, pos.z].id == _id)
@@ -92,7 +111,8 @@ public class ChunkData {
 
         if (voxel.properties.isActive && BlockBehaviour.Active(voxel))
             voxel.chunkData.chunk.AddActiveVoxel(voxel);
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 6; i++)
+        {
             if (voxel.neighbours[i] != null)
                 if (voxel.neighbours[i].properties.isActive && BlockBehaviour.Active(voxel.neighbours[i]))
                     voxel.neighbours[i].chunkData.chunk.AddActiveVoxel(voxel.neighbours[i]);
@@ -107,7 +127,8 @@ public class ChunkData {
 
     }
 
-    public bool IsVoxelInChunk (int x, int y, int z) {
+    public bool IsVoxelInChunk(int x, int y, int z)
+    {
 
         if (x < 0 || x > VoxelData.ChunkWidth - 1 || y < 0 || y > VoxelData.ChunkHeight - 1 || z < 0 || z > VoxelData.ChunkWidth - 1)
             return false;
@@ -116,16 +137,74 @@ public class ChunkData {
 
     }
 
-    public bool IsVoxelInChunk (Vector3Int pos) {
+    public bool IsVoxelInChunk(Vector3Int pos)
+    {
 
         return IsVoxelInChunk(pos.x, pos.y, pos.z);
 
     }
 
-    public VoxelState VoxelFromV3Int(Vector3Int pos) {
+    public VoxelState VoxelFromV3Int(Vector3Int pos)
+    {
 
         return map[pos.x, pos.y, pos.z];
 
     }
 
+
+
+
+    public void Serialize(Stream stream)
+    {
+        using (var bw = new BinaryWriter(stream))
+        {
+            bw.Write(x);
+            bw.Write(y);
+            bw.Write(map.GetLength(0));
+            bw.Write(map.GetLength(1));
+            bw.Write(map.GetLength(2));
+            for (int i = 0; i < map.GetLength(0); i++)
+            {
+                for (int j = 0; j < map.GetLength(1); j++)
+                {
+                    for (int k = 0; k < map.GetLength(2); k++)
+                    {
+                        bw.Write(map[i, j, k].id);
+                        bw.Write(map[i, j, k].orientation);
+                    }
+                }
+            }
+        }
+    }
+    public static ChunkData Deserialize(Stream stream)
+    {
+        var chunkData = new ChunkData();
+        using(var sr = new BinaryReader(stream))
+        {
+            chunkData.x = sr.ReadInt32();
+            chunkData.y = sr.ReadInt32();
+            var mapLength0 = sr.ReadInt32();
+            var mapLength1 = sr.ReadInt32();
+            var mapLength2 = sr.ReadInt32();
+            chunkData.map = new VoxelState[mapLength0, mapLength1, mapLength2];
+            for (int i = 0; i < mapLength0; i++)
+            {
+                for (int j = 0; j < mapLength1; j++)
+                {
+                    for (int k = 0; k < mapLength2; k++)
+                    {
+                        var id = sr.ReadByte();
+                        var orientation = sr.ReadInt32();
+
+                        chunkData.map[i, j, k] = new VoxelState(id, chunkData, new Vector3Int(i, j, k), orientation);
+                  
+                    }
+                }
+            }
+        }
+        return chunkData;
+    }
+
+
+  
 }

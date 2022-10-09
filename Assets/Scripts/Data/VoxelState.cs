@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 [System.Serializable]
@@ -95,10 +96,10 @@ public class VoxelState {
 
   
 
-    public VoxelState(byte _id, ChunkData _chunkData, Vector3Int _position) {
+    public VoxelState(byte _id, ChunkData _chunkData, Vector3Int _position,int _orientation = 1) {
 
         id = _id;
-        orientation = 1;
+        orientation = _orientation;
         chunkData = _chunkData;
         neighbours = new VoxelNeighbours(this);
         position = _position;
@@ -162,6 +163,9 @@ public class VoxelState {
 
         }
     }
+
+   
+    
 
     public BlockType properties {
 

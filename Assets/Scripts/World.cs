@@ -49,6 +49,10 @@ public class World : MonoBehaviour
             {
                 var chunksInViewDistance = GetChunksInViewDistance();
                 _worldIsReady = chunksInViewDistance.All(l => chunks[l.x, l.z].IsRendered);
+                if (_worldIsReady)
+                {
+                    Debug.Log($"World is ready, time = {Time.realtimeSinceStartup}s");
+                }
                 return _worldIsReady;
             }
             else
@@ -93,48 +97,51 @@ public class World : MonoBehaviour
         appPath = Application.persistentDataPath;
 
         _player = player.GetComponent<Player>();
-        backgroundThread = new BackgroundThread();
+
 
         spawnPosition = new Vector3(VoxelData.WorldCentre, VoxelData.ChunkHeight - 50f, VoxelData.WorldCentre);
         player.position = spawnPosition;
+        worldData = new WorldData();
+
+        backgroundThread = new BackgroundThread(ActiveChunks);
     }
 
     private void Start()
     {
-
-        Debug.Log("Generating new world using seed " + VoxelData.seed);
-
-        worldData = SaveSystem.LoadWorld("Testing");
-
-
-        //string jsonExport = JsonUtility.ToJson(settings);
-        //Debug.Log(jsonExport);
-
-        //File.WriteAllText(Application.dataPath + "/settings.cfg", jsonExport);
-
-        string jsonImport = File.ReadAllText(Application.dataPath + "/settings.cfg");
-        settings = JsonUtility.FromJson<Settings>(jsonImport);
+        using (var logger = new DebugLogger())
+        {
+            Debug.Log("Generating new world using seed " + VoxelData.seed);
 
 
-        UnityEngine.Random.InitState(VoxelData.seed);
+            worldData = SaveSystem.LoadWorld("Testing");
+            backgroundThread.WorldData = worldData;
+           
 
-        Shader.SetGlobalFloat("minGlobalLightLevel", VoxelData.minLightLevel);
-        Shader.SetGlobalFloat("maxGlobalLightLevel", VoxelData.maxLightLevel);
 
-        LoadWorld();
+            string jsonImport = File.ReadAllText(Application.dataPath + "/settings.cfg");
+            settings = JsonUtility.FromJson<Settings>(jsonImport);
 
-        backgroundThread.Init(worldData, ActiveChunks);
-        backgroundThread.Start();
 
-        SetGlobalLightValue();
-      
-        UpdateChunksInViewDistance();
-        playerLastChunkCoord = GetChunkCoordFromVector3(player.position);
+            UnityEngine.Random.InitState(VoxelData.seed);
+
+            Shader.SetGlobalFloat("minGlobalLightLevel", VoxelData.minLightLevel);
+            Shader.SetGlobalFloat("maxGlobalLightLevel", VoxelData.maxLightLevel);
+
+            LoadWorld();
+            CreateWorld();
+
+            SetGlobalLightValue();
+
+            UpdateChunksInViewDistance();
+            playerLastChunkCoord = GetChunkCoordFromVector3(player.position);
 
 
 
-        StartCoroutine(Tick());
+            StartCoroutine(Tick());
 
+            // only start when everything is loaded
+            backgroundThread.Start();
+        }
     }
 
     public void SetGlobalLightValue()
@@ -161,7 +168,6 @@ public class World : MonoBehaviour
 
     private void Update()
     {
-
         playerChunkCoord = GetChunkCoordFromVector3(player.position);
 
         // Only update the chunks if the player has moved from the chunk they were previously on.
@@ -184,24 +190,45 @@ public class World : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F1))
             SaveSystem.SaveWorld(worldData);
 
-
+        if (Input.GetKeyDown(KeyCode.F5))
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#endif
+        }
 
 
     }
 
     void LoadWorld()
     {
-
-        for (int x = (VoxelData.WorldSizeInChunks / 2) - settings.loadDistance; x < (VoxelData.WorldSizeInChunks / 2) + settings.loadDistance; x++)
+        using (var debugLogger = new DebugLogger())
         {
-            for (int z = (VoxelData.WorldSizeInChunks / 2) - settings.loadDistance; z < (VoxelData.WorldSizeInChunks / 2) + settings.loadDistance; z++)
+            for (int x = (VoxelData.WorldSizeInChunks / 2) - settings.loadDistance; x < (VoxelData.WorldSizeInChunks / 2) + settings.loadDistance; x++)
             {
+                for (int z = (VoxelData.WorldSizeInChunks / 2) - settings.loadDistance; z < (VoxelData.WorldSizeInChunks / 2) + settings.loadDistance; z++)
+                {
 
-                worldData.LoadChunk(new Vector2Int(x, z));
+                    worldData.LoadChunk(new Vector2Int(x, z));
 
+                }
+            }
+        }        
+    }
+    void CreateWorld()
+    {
+        using (var debugLogger = new DebugLogger())
+        {
+            for (int x = (VoxelData.WorldSizeInChunks / 2) - settings.loadDistance; x < (VoxelData.WorldSizeInChunks / 2) + settings.loadDistance; x++)
+            {
+                for (int z = (VoxelData.WorldSizeInChunks / 2) - settings.loadDistance; z < (VoxelData.WorldSizeInChunks / 2) + settings.loadDistance; z++)
+                {
+
+                    worldData.CreateChunk(new Vector2Int(x, z));
+
+                }
             }
         }
-
     }
 
 
@@ -288,7 +315,7 @@ public class World : MonoBehaviour
         {
             for (int z = coord.z - settings.viewDistance; z < coord.z + settings.viewDistance; z++)
             {
-                chunksInViewDistance.Add(new ChunkCoord(x,z));
+                chunksInViewDistance.Add(new ChunkCoord(x, z));
             }
         }
         return chunksInViewDistance;

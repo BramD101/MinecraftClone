@@ -1,19 +1,29 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [System.Serializable]
-public class WorldData {
+public class WorldData : IDeserializationCallback
+{
 
     public string worldName = "Prototype";
     public int seed;
 
     [System.NonSerialized]
-    public Dictionary<Vector2Int, ChunkData> chunks = new Dictionary<Vector2Int, ChunkData>();
+    public Dictionary<Vector2Int, ChunkData> chunks = new ();
 
     [System.NonSerialized]
-    public List<ChunkData> modifiedChunks = new List<ChunkData>();
+    public List<ChunkData> modifiedChunks = new();
 
+
+
+    public void OnDeserialization(object sender)
+    {
+        chunks = new();
+        modifiedChunks = new();
+    }
     public void AddToModifiedChunkList (ChunkData chunk) {
 
         if (!modifiedChunks.Contains(chunk))
@@ -21,19 +31,7 @@ public class WorldData {
 
     }
 
-    public WorldData (string _worldName, int _seed) {
-
-        worldName = _worldName;
-        seed = _seed;
-
-    }
-
-    public WorldData (WorldData wD) {
-
-        worldName = wD.worldName;
-        seed = wD.seed;
-
-    }
+    
 
     public ChunkData RequestChunk (Vector2Int coord, bool create) {
 
@@ -46,31 +44,41 @@ public class WorldData {
             else if (!create)
                 c = null;
             else {
-                LoadChunk(coord);
+                if (!LoadChunk(coord))
+                {
+                    CreateChunk(coord);
+                }
                 c = chunks[coord];
             }
-
         }
 
         return c;
 
     }
 
-    public void LoadChunk (Vector2Int coord) {
+    public bool LoadChunk (Vector2Int coord) {
 
         if (chunks.ContainsKey(coord))
-            return;
+            return false;
 
         ChunkData chunk = SaveSystem.LoadChunk(worldName, coord);
         if (chunk != null) {
             chunks.Add(coord, chunk);
-            return;
+            return true;
         }
+        return false;
+
+       
+    }
+    public void CreateChunk(Vector2Int coord)
+    {
+        if (chunks.ContainsKey(coord))
+            return;
 
         chunks.Add(coord, new ChunkData(coord));
         chunks[coord].Populate();
-
     }
+
 
     bool IsVoxelInWorld (Vector3 pos) {
 

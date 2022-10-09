@@ -161,10 +161,7 @@ namespace Assembly_CSharp
     {
         public byte VoxelType { get; set; }
         public Queue<VoxelMod> Structure { get; set; }
-        public VoxelGenerationData()
-        {
-            Structure = new Queue<VoxelMod>();
-        }
+       
     }
 
 }
