@@ -33,6 +33,7 @@ public class Chunk
 
 
     public bool IsRendered { get; internal set; }
+    public bool IsWaitingForRender { get; set; }
 
     public Chunk(ChunkData _chunkData)
     {

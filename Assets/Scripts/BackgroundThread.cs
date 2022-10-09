@@ -19,14 +19,14 @@ namespace Assets.Scripts
 
         private Thread _thread;
 
-        private ConcurrentQueue<AsyncTask> _eventBacklog = new ();
+        private ConcurrentQueue<AsyncTask> _eventBacklog = new();
 
         public static readonly AutoResetEvent ResetEvent = new AutoResetEvent(true);
 
 
-        private BackgroundThread()    {        }
+        private BackgroundThread() { }
 
-     
+
         private static BackgroundThread _instance;
         public static BackgroundThread Instance
         {
@@ -115,17 +115,27 @@ namespace Assets.Scripts
         }
 
 
-
+        private object _isWaitingForRender = new();
         public void EnQueueuChunkToUpdate(Chunk chunk)
         {
-
-            _eventBacklog.Enqueue(new AsyncTask(chunk, null, OnUpdateChunk));
+            lock (_isWaitingForRender)
+            {
+                if (!chunk.IsWaitingForRender)
+                {
+                    _eventBacklog.Enqueue(new AsyncTask(chunk, null, OnUpdateChunk));
+                    chunk.IsWaitingForRender = true;
+                }
+            }
             ResetEvent.Set();
         }
         public void OnUpdateChunk(object sender, EventArgs args)
         {
             var chunk = sender as Chunk;
             _activeChunks.TryEnqueue(chunk.coord);
+            lock (_isWaitingForRender)
+            {
+                chunk.IsWaitingForRender = false; ;
+            }
             chunk.UpdateChunk();
         }
 

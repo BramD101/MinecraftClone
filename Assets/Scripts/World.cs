@@ -296,11 +296,10 @@ public class World : MonoBehaviour
             }
 
             // Check through previously active chunks to see if this chunk is there. If it is, remove it from the list.
-            for (int i = 0; i < previouslyActiveChunks.Count; i++)
-            {
-                previouslyActiveChunks.TryRemove(chunkCoord);
+           
+            previouslyActiveChunks.TryRemove(chunkCoord);
 
-            }
+            
         }
         
         // Any chunks left in the previousActiveChunks list are no longer in the player's view distance, so loop through and disable them.
