@@ -262,6 +262,7 @@ GameObject:
   m_Component:
   - component: {fileID: 215957293}
   - component: {fileID: 215957292}
+  - component: {fileID: 215957294}
   m_Layer: 0
   m_Name: World
   m_TagString: Untagged
@@ -285,7 +286,7 @@ MonoBehaviour:
     version: 0.0.01
     loadDistance: 16
     viewDistance: 4
-    enableThreading: 1
+    dynamicLighting: 0
     clouds: 1
     enableAnimatedChunks: 1
     mouseSensitivity: 2
@@ -536,6 +537,22 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &215957294
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 215957291}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d5e305a4482eec4895601c8f1d611ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _biomes:
+  - {fileID: 11400000, guid: 02049af79bea41c4b95708510689f354, type: 2}
+  - {fileID: 11400000, guid: 8f1154cda38379243bcb6be2196fd691, type: 2}
+  - {fileID: 11400000, guid: 1d07db8f10b93544a81114b299c001a9, type: 2}
 --- !u!1 &292925855
 GameObject:
   m_ObjectHideFlags: 0

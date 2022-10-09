@@ -20,15 +20,18 @@ namespace Assets.Scripts
         private Thread thread;
         internal void Abort()
         {
-            thread.Abort();
+            thread?.Abort();
         }
 
         public static readonly AutoResetEvent ResetEvent = new AutoResetEvent(true);
-        public BackgroundThread(WorldData worldData, ConcurrentUniqueQueue<ChunkCoord> activeChunks)
+      
+        public void Init(WorldData worldData, ConcurrentUniqueQueue<ChunkCoord> activeChunks)
         {
             _worldData = worldData;
             _activeChunks = activeChunks;
-
+        }
+        public void Start()
+        {
             thread = new Thread(new ThreadStart(Update));
             thread.Start();
         }

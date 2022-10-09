@@ -14,8 +14,6 @@ public class World : MonoBehaviour
 
     public Settings settings;
 
-    [Header("World Generation Values")]
-    public BiomeAttributes[] biomes;
 
     [Range(0f, 1f)]
     public float globalLightLevel;
@@ -76,6 +74,7 @@ public class World : MonoBehaviour
         appPath = Application.persistentDataPath;
 
         _player = player.GetComponent<Player>();
+        backgroundThread = new BackgroundThread();
 
     }
 
@@ -103,7 +102,8 @@ public class World : MonoBehaviour
 
         LoadWorld();
 
-        backgroundThread = new BackgroundThread(worldData, ActiveChunks);
+        backgroundThread.Init(worldData, ActiveChunks);
+        backgroundThread.Start();
 
         SetGlobalLightValue();
         spawnPosition = new Vector3(VoxelData.WorldCentre, VoxelData.ChunkHeight - 50f, VoxelData.WorldCentre);
@@ -316,125 +316,7 @@ public class World : MonoBehaviour
         }
 
     }
-
-    public byte GetVoxel(Vector3 pos)
-    {
-
-        int yPos = Mathf.FloorToInt(pos.y);
-
-        /* IMMUTABLE PASS */
-
-        // If outside world, return air.
-        if (!IsVoxelInWorld(pos))
-            return 0;
-
-        // If bottom block of chunk, return bedrock.
-        if (yPos == 0)
-            return 1;
-
-        /* BIOME SELECTION PASS*/
-
-        int solidGroundHeight = 42;
-        float sumOfHeights = 0f;
-        int count = 0;
-        float strongestWeight = 0f;
-        int strongestBiomeIndex = 0;
-
-        for (int i = 0; i < biomes.Length; i++)
-        {
-
-            float weight = Noise.Get2DPerlin(new Vector2(pos.x, pos.z), biomes[i].offset, biomes[i].scale);
-
-            // Keep track of which weight is strongest.
-            if (weight > strongestWeight)
-            {
-
-                strongestWeight = weight;
-                strongestBiomeIndex = i;
-
-            }
-
-            // Get the height of the terrain (for the current biome) and multiply it by its weight.
-            float height = biomes[i].terrainHeight * Noise.Get2DPerlin(new Vector2(pos.x, pos.z), 0, biomes[i].terrainScale) * weight;
-
-            // If the height value is greater 0 add it to the sum of heights.
-            if (height > 0)
-            {
-
-                sumOfHeights += height;
-                count++;
-
-            }
-
-        }
-
-        // Set biome to the one with the strongest weight.
-        BiomeAttributes biome = biomes[strongestBiomeIndex];
-
-        // Get the average of the heights.
-        sumOfHeights /= count;
-
-        int terrainHeight = Mathf.FloorToInt(sumOfHeights + solidGroundHeight);
-
-
-        //BiomeAttributes biome = biomes[index];
-
-        /* BASIC TERRAIN PASS */
-
-        byte voxelValue = 0;
-
-        if (yPos == terrainHeight)
-            voxelValue = biome.surfaceBlock;
-        else if (yPos < terrainHeight && yPos > terrainHeight - 4)
-            voxelValue = biome.subSurfaceBlock;
-        else if (yPos > terrainHeight)
-        {
-            if (yPos < 51)
-                return 14;
-            else
-                return 0;
-
-        }
-        else
-            voxelValue = 2;
-
-        /* SECOND PASS */
-
-        if (voxelValue == 2)
-        {
-
-            foreach (Lode lode in biome.lodes)
-            {
-
-                if (yPos > lode.minHeight && yPos < lode.maxHeight)
-                    if (Noise.Get3DPerlin(pos, lode.noiseOffset, lode.scale, lode.threshold))
-                        voxelValue = lode.blockID;
-
-            }
-
-        }
-
-        /* TREE PASS */
-
-        if (yPos == terrainHeight && biome.placeMajorFlora)
-        {
-
-            if (Noise.Get2DPerlin(new Vector2(pos.x, pos.z), 0, biome.majorFloraZoneScale) > biome.majorFloraZoneThreshold)
-            {
-
-                if (Noise.Get2DPerlin(new Vector2(pos.x, pos.z), 0, biome.majorFloraPlacementScale) > biome.majorFloraPlacementThreshold)
-                {
-
-                    backgroundThread.EnQueueModification(Structure.GenerateMajorFlora(biome.majorFloraIndex, pos, biome.minHeight, biome.maxHeight));
-                }
-            }
-
-        }
-
-        return voxelValue;
-
-
-    }
+        
 
     bool IsChunkInWorld(ChunkCoord coord)
     {
@@ -447,7 +329,7 @@ public class World : MonoBehaviour
 
     }
 
-    bool IsVoxelInWorld(Vector3 pos)
+    public bool IsVoxelInWorld(Vector3 pos)
     {
 
         if (pos.x >= 0 && pos.x < VoxelData.WorldSizeInVoxels && pos.y >= 0 && pos.y < VoxelData.ChunkHeight && pos.z >= 0 && pos.z < VoxelData.WorldSizeInVoxels)
@@ -463,6 +345,11 @@ public class World : MonoBehaviour
     public void AddChunkToUpdate(Chunk chunk, bool insert)
     {
         backgroundThread.AddChunkToUpdate(chunk, insert);
+    }
+
+    public void GenerateStructure(Queue<VoxelMod> structure)
+    {
+        backgroundThread.EnQueueModification(structure);
     }
 }
 

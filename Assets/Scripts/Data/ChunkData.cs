@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Assembly_CSharp;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -37,7 +38,9 @@ public class ChunkData {
 
                     Vector3 voxelGlobalPos = new Vector3(x + position.x, y, z + position.y);
 
-                    map[x, y, z] = new VoxelState(World.Instance.GetVoxel(voxelGlobalPos), this, new Vector3Int(x, y, z));
+                    var voxelGenerationData = WorldGenerator.Instance.GenerateVoxel(voxelGlobalPos);
+                    World.Instance.GenerateStructure(voxelGenerationData.Structure);
+                    map[x, y, z] = new VoxelState(voxelGenerationData.VoxelType, this, new Vector3Int(x, y, z));
 
                     // Loop through each of the voxels neighbours and attempt to set them.
                     for (int p = 0; p < 6; p++) {
