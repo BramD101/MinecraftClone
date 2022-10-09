@@ -37,7 +37,6 @@ public class World : MonoBehaviour
     public ChunkCoord playerChunkCoord;
     ChunkCoord playerLastChunkCoord;
 
-    private BackgroundThread backgroundThread;
 
     public ConcurrentQueue<Chunk> chunksToDraw = new ConcurrentQueue<Chunk>();
     private bool _worldIsReady;
@@ -104,7 +103,6 @@ public class World : MonoBehaviour
         player.position = spawnPosition;
         worldData = new WorldData();
 
-        backgroundThread = new BackgroundThread(ActiveChunks);
     }
 
     private void Start()
@@ -115,7 +113,7 @@ public class World : MonoBehaviour
 
 
             worldData = SaveSystem.LoadWorld("Testing");
-            backgroundThread.WorldData = worldData;
+            BackgroundThread.Instance.Setup(worldData, ActiveChunks);
            
 
 
@@ -141,7 +139,7 @@ public class World : MonoBehaviour
             StartCoroutine(Tick());
 
             // only start when everything is loaded
-            backgroundThread.Start();
+            BackgroundThread.Instance.Start();
         }
     }
 
@@ -174,7 +172,9 @@ public class World : MonoBehaviour
 
         // Only update the chunks if the player has moved from the chunk they were previously on.
         if (!playerChunkCoord.Equals(playerLastChunkCoord))
+        {
             UpdateChunksInViewDistance();
+        }
 
         if (chunksToDraw.Count > 0)
         {
@@ -243,9 +243,7 @@ public class World : MonoBehaviour
 
     private void OnDisable()
     {
-        backgroundThread?.Abort();
-
-
+        BackgroundThread.Instance.Abort();
     }
 
 
@@ -397,13 +395,13 @@ public class World : MonoBehaviour
     }
     public void AddChunkToUpdate(Chunk chunk)
     {
-        backgroundThread.EnQueueuChunkToUpdate(chunk);
+        BackgroundThread.Instance.EnQueueuChunkToUpdate(chunk);
     }
   
 
     public void GenerateStructure(Queue<VoxelMod> structure)
     {
-        backgroundThread.EnQueueModification(structure);
+        BackgroundThread.Instance.EnQueueModification(structure);
     }
 }
 

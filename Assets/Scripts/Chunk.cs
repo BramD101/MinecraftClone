@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.Scripts;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -29,6 +30,9 @@ public class Chunk
     ChunkData chunkData;
 
     List<VoxelState> activeVoxels = new List<VoxelState>();
+
+
+    public bool IsRendered { get; internal set; }
 
     public Chunk(ChunkData _chunkData)
     {
@@ -111,6 +115,7 @@ public class Chunk
             }
 
             World.Instance.chunksToDraw.Enqueue(this);
+
         }
 
     }
@@ -155,7 +160,6 @@ public class Chunk
 
    
 
-    public bool IsRendered { get; internal set; }
 
     public void EditVoxel(Vector3 pos, byte newID)
     {
@@ -363,6 +367,14 @@ public class Chunk
 
     public void SetActive(bool isActive)
     {
+        if (!isActive)
+        {
+            ClearMeshData();
+        }
+        if(isActive && !IsRendered)
+        {
+            BackgroundThread.Instance.EnQueueuChunkToUpdate(this);
+        }
         chunkObject.SetActive(isActive);
     }
 }

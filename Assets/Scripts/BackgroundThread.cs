@@ -14,23 +14,37 @@ namespace Assets.Scripts
     internal class BackgroundThread
     {
         private WorldData _worldData;
-        public WorldData WorldData { set { _worldData = value; } }  
 
         private ConcurrentUniqueQueue<ChunkCoord> _activeChunks;
 
         private Thread _thread;
 
-        private ConcurrentQueue<AsyncTask> _eventBacklog;
-      
+        private ConcurrentQueue<AsyncTask> _eventBacklog = new ();
+
         public static readonly AutoResetEvent ResetEvent = new AutoResetEvent(true);
 
-        public BackgroundThread(ConcurrentUniqueQueue<ChunkCoord> activeChunks)
+
+        private BackgroundThread()    {        }
+
+     
+        private static BackgroundThread _instance;
+        public static BackgroundThread Instance
         {
-            _eventBacklog = new ConcurrentQueue<AsyncTask>();
-            _activeChunks = activeChunks;
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new BackgroundThread();
+                }
+                return _instance;
+            }
         }
 
-      
+        public void Setup(WorldData worldData, ConcurrentUniqueQueue<ChunkCoord> activeChunks)
+        {
+            _worldData = worldData;
+            _activeChunks = activeChunks;
+        }
         public void Start()
         {
             Assert.IsNotNull(_worldData);
@@ -48,10 +62,10 @@ namespace Assets.Scripts
         {
             // temp
             while (true)
-            {             
-                      
+            {
+
                 AsyncTask result = null;
-                if(_eventBacklog.TryDequeue(out result))
+                if (_eventBacklog.TryDequeue(out result))
                 {
                     result.Invoke();
                 }
@@ -65,8 +79,8 @@ namespace Assets.Scripts
         public void EnQueueModification(Queue<VoxelMod> mod)
         {
 
-            _eventBacklog.Enqueue(new AsyncTask(_worldData,new ApplyModificationsEventArgs(mod), OnApplyModification));
-           
+            _eventBacklog.Enqueue(new AsyncTask(_worldData, new ApplyModificationsEventArgs(mod), OnApplyModification));
+
             ResetEvent.Set();
         }
 
@@ -99,28 +113,16 @@ namespace Assets.Scripts
             }
 
         }
-        
 
 
-
-
-        bool IsChunkInWorld(ChunkCoord coord)
-        {
-
-            if (coord.x > 0 && coord.x < VoxelData.WorldSizeInChunks - 1 && coord.z > 0 && coord.z < VoxelData.WorldSizeInChunks - 1)
-                return true;
-            else
-                return
-                    false;
-
-        }
 
         public void EnQueueuChunkToUpdate(Chunk chunk)
         {
+
             _eventBacklog.Enqueue(new AsyncTask(chunk, null, OnUpdateChunk));
             ResetEvent.Set();
         }
-        public void OnUpdateChunk(object sender,EventArgs args)
+        public void OnUpdateChunk(object sender, EventArgs args)
         {
             var chunk = sender as Chunk;
             _activeChunks.TryEnqueue(chunk.coord);
