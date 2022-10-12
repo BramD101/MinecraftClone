@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Assets.Scripts
 {
-    internal class ChunkData
+    internal class WorldData
     {
     }
 }
