@@ -5,13 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-
-public class GameSettings : MonoBehaviour
+[System.Serializable]
+[CreateAssetMenu(fileName = "GameSettings", menuName = "MinecraftAsset/GameSettings")]
+public class GameSettings : ScriptableObject
 {
-    [SerializeField]
-    private MenuSettings _menuSettings;
-    public MenuSettings MenuSettings { get => _menuSettings; }
-
     [Range(0f, 1f)]
     [SerializeField]
     private float _globalLightLevel;
@@ -26,10 +23,6 @@ public class GameSettings : MonoBehaviour
     public Color Night { get => _night; }
 
     [SerializeField]
-    private Vector3 _spawnPosition;
-    public Vector3 SpawnPosition { get => _spawnPosition; }
-
-    [SerializeField]
     private Material _material;
     public Material Material { get => _material; }
 
@@ -42,32 +35,13 @@ public class GameSettings : MonoBehaviour
     public Material WaterMaterial { get => _waterMaterial; }
 
     [SerializeField]
-    private BlockType[] _blocktypes;
-    public BlockType[] Blocktypes { get => _blocktypes; }
-
-    [SerializeField]
-    private Clouds _clouds;
-    public Clouds Clouds { get => _clouds; }
-
-    [SerializeField]
-    private GameObject _debugScreen;
-        public GameObject DebugScreen { get => _debugScreen; }
-
-    [SerializeField]
-    private GameObject _creativeInventoryWindow;
-    public GameObject CreativeInventoryWindow { get => _creativeInventoryWindow; }
-
-    [SerializeField]
-    private GameObject _cursorSlot;
-    public GameObject CursorSlot { get => _cursorSlot; }
-
+    private VoxelTypeData[] _blocktypes;
+    public VoxelTypeData[] Blocktypes { get => _blocktypes; }
+     
     [SerializeField]
     private string _appPath;
     public string AppPath { get => _appPath; }
 
-    [SerializeField]
-    private BiomeAttributes[] _biomes;
-    public BiomeAttributes[] Biomes { get => _biomes; }
 
 }
 

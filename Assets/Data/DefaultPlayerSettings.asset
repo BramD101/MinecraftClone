@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a185e6dd2c2c594488c907e52a64497, type: 3}
+  m_Name: DefaultPlayerSettings
+  m_EditorClassIdentifier: 
+  _isGrounded: 0
+  _isSprinting: 0
+  _walkSpeed: 3
+  _sprintSpeed: 6
+  _jumpForce: 5
+  _gravity: -9.8
+  _playerWidth: 0.15
+  _boundsTolerance: 0.1
+  _orientation: 0
+  _highlightBlock: {fileID: 0}
+  _placeBlock: {fileID: 0}
+  _toolbar: {fileID: 0}
+  _checkIncrement: 0.1
+  _reach: 8

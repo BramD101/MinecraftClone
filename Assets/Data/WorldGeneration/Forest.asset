@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 604863bef2f81714b90b56811bb2841f, type: 3}
+  m_Name: Forest
+  m_EditorClassIdentifier: 
+  _biomeName: Forest
+  _offset: 87544
+  _scale: 0.17
+  _terrainHeight: 80
+  _terrainScale: 0.3
+  _surfaceBlock: 5
+  _subSurfaceBlock: 5
+  _majorFloraIndex: 0
+  _majorFloraZoneScale: 1.3
+  _majorFloraZoneThreshold: 0.384
+  _majorFloraPlacementScale: 5
+  _majorFloraPlacementThreshold: 0.755
+  _placeMajorFlora: 1
+  _maxHeight: 12
+  _minHeight: 5
+  _lodes:
+  - _nodeName: Dirt
+    _blockID: 5
+    _minHeight: 1
+    _maxHeight: 255
+    _scale: 0.1
+    _threshold: 0.5
+    _noiseOffset: 0
+  - _nodeName: Sand
+    _blockID: 4
+    _minHeight: 30
+    _maxHeight: 60
+    _scale: 0.2
+    _threshold: 0.6
+    _noiseOffset: 500
+  - _nodeName: Caves
+    _blockID: 0
+    _minHeight: 5
+    _maxHeight: 60
+    _scale: 0.1
+    _threshold: 0.55
+    _noiseOffset: 43534

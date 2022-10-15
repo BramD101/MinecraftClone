@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "New Voxel Mesh Data", menuName = "MinecraftTutorial/Voxel Mesh Data")]
+[CreateAssetMenu(fileName = "VoxelMeshData", menuName = "MinecraftAsset/VoxelMeshData")]
 public class VoxelMeshData : ScriptableObject {
-
-    public string blockName;
-    public FaceMeshData[] faces; // 6 faces using our established winding order.
+    [SerializeField]
+    private VoxelMeshDataType _blockName;
+    [SerializeField]
+    public FaceMeshData[] _faces; // 6 faces using our established winding order.
 
 }
 
@@ -39,15 +40,24 @@ public class FaceMeshData {
 
     // Because all of the verts in this face are facing the same direction, we can store a single normal value
     // for each face and use that for each vert in the face.
-
-    public string direction; // Purely to make things easier to read in the inspector.
-    public VertData[] vertData;
-    public int[] triangles;
+    [SerializeField]
+    private string _direction; // Purely to make things easier to read in the inspector.
+    [SerializeField]
+    private VertData[] _vertData;
+    [SerializeField]
+    private int[] _triangles;
 
     public VertData GetVertData(int index) {
 
-        return vertData[index];
+        return _vertData[index];
 
     }
 
+}
+
+public enum VoxelMeshDataType
+{
+    HalfSlabBlock,
+    StandardBlock,
+    WaterBlock
 }

@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b790f4ff74cedef408b2fa3bf4cca23c, type: 3}
+  m_Name: DefaultGameSettings
+  m_EditorClassIdentifier: 
+  _globalLightLevel: 1
+  _day: {r: 0, g: 1, b: 0.98039216, a: 0}
+  _night: {r: 0, g: 0, b: 0.3019608, a: 0}
+  _material: {fileID: 2100000, guid: 82082689290290d429ef5be65ab79789, type: 2}
+  _transparentMaterial: {fileID: 2100000, guid: 9bd70c006693ec445ad257fbd43bb4f0, type: 2}
+  _waterMaterial: {fileID: 2100000, guid: 285c2fe7c2cf9454f8328e7452875936, type: 2}
+  _blocktypes:
+  - {fileID: 11400000, guid: d1ba4c3c58ce4904081d9eba0a0ff4c0, type: 2}
+  - {fileID: 11400000, guid: 1b6a1bc20f81a7a439faed79b6c0ac00, type: 2}
+  - {fileID: 11400000, guid: 0d9c95056aeff6444b9a49c0224d5148, type: 2}
+  - {fileID: 11400000, guid: fa52ac7c2c58f364db6dd4c9f11f8e69, type: 2}
+  - {fileID: 11400000, guid: 9b3b80e8c75d360468312c67998566c4, type: 2}
+  - {fileID: 11400000, guid: dcfc7b6522fb35f4e949864d7c0b1e26, type: 2}
+  - {fileID: 11400000, guid: 85a7d5a184dc2a747a5b9db6daa1b761, type: 2}
+  - {fileID: 11400000, guid: 9a61b5c6f67667e4aa3a1147c651f25f, type: 2}
+  - {fileID: 11400000, guid: 26e1305142be3c34b914ddd70149a986, type: 2}
+  - {fileID: 11400000, guid: 5eb38569c5efa53429d74bac4d6836fe, type: 2}
+  - {fileID: 11400000, guid: e1c35b6344326db46a2a9e66fdcf5aa7, type: 2}
+  - {fileID: 11400000, guid: 57468c5a284351c47927f29563cda823, type: 2}
+  - {fileID: 11400000, guid: 2588a97193df8564882b6618264cd9b5, type: 2}
+  - {fileID: 11400000, guid: 254f9d76ee6000e438e3318095bff86b, type: 2}
+  - {fileID: 11400000, guid: 8c1745c869a675648a2581603dd10ee5, type: 2}
+  _appPath: C:\Users\BramD\temp\MineCraftClone

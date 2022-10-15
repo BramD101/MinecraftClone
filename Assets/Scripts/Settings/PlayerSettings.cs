@@ -1,63 +1,48 @@
 ﻿
 using UnityEngine;
 
-
-public class PlayerSettings : MonoBehaviour
+[System.Serializable]
+[CreateAssetMenu(fileName = "PlayerSettings", menuName = "MinecraftAsset/PlayerSettings")]
+public class PlayerSettings : ScriptableObject
 {
     [SerializeField]
-    private bool _isGrounded;
-    public bool IsGrounded { get => _isGrounded; } 
-
-    [SerializeField]
-    private bool _isSprinting;
-    public bool IsSprinting{get => _isSprinting;}
-
-    [SerializeField]
-    private float _walkSpeed = 3f;
+    private float _walkSpeed;
     public float WalkSpeed { get => _walkSpeed; } 
 
     [SerializeField]
-    private float _sprintSpeed = 6f;
+    private float _sprintSpeed;
     public float SprintSpeed { get => _sprintSpeed; } 
 
     [SerializeField]
-    private float _jumpForce = 5f;
+    private float _jumpForce;
     public float JumpForce { get => _jumpForce; } 
 
     [SerializeField]
-    private float _gravity = -9.8f;
+    private float _gravity;
     public float Gravity { get => _gravity; } 
 
     [SerializeField]
-    private float _playerWidth = 0.15f;
+    private float _playerWidth;
     public float PlayerWidth { get => _playerWidth; } 
 
     [SerializeField]
-    private float _boundsTolerance = 0.1f;
+    private float _boundsTolerance;
     public float BoundsTolerance { get => _boundsTolerance; } 
 
     [SerializeField]
     private int _orientation;
     public int Orientation { get => _orientation; } 
 
-    [SerializeField]
-    private Transform _highlightBlock;
-    public Transform HighlightBlock { get => _highlightBlock; } 
+
 
     [SerializeField]
-    private Transform _placeBlock;
-    public Transform PlaceBlock { get => _placeBlock; } 
-
-    [SerializeField]
-    private float _checkIncrement = 0.1f;
+    private float _checkIncrement;
     public float CheckIncrement { get => _checkIncrement; } 
 
     [SerializeField]
-    private float _reach = 8f;
+    private float _reach;
     public float Reach { get => _reach; } 
 
-    [SerializeField]
-    private Toolbar _toolbar;
-    public Toolbar Toolbar { get => _toolbar; } 
+
 }
 

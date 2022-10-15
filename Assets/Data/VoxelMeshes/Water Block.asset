@@ -9,19 +9,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e37c0a1909c19a34f8215ed0016a4f26, type: 3}
+  m_Script: {fileID: 11500000, guid: 92980afa73c8f664c81f1e895dbfe04d, type: 3}
   m_Name: Water Block
   m_EditorClassIdentifier: 
-  blockName: Water Block
-  faces:
-  - direction: Back
-    vertData: []
-    triangles: 
-  - direction: Front
-    vertData: []
-    triangles: 
-  - direction: Top
-    vertData:
+  _blockName: 2
+  _faces:
+  - _direction: Back
+    _vertData: []
+    _triangles: 
+  - _direction: Front
+    _vertData: []
+    _triangles: 
+  - _direction: Top
+    _vertData:
     - position: {x: 0, y: 0.875, z: 0}
       uv: {x: 0, y: 0}
     - position: {x: 0, y: 0.875, z: 1}
@@ -30,13 +30,13 @@ MonoBehaviour:
       uv: {x: 1, y: 1}
     - position: {x: 1, y: 0.875, z: 0}
       uv: {x: 1, y: 0}
-    triangles: 000000000100000003000000030000000100000002000000
-  - direction: Bottom
-    vertData: []
-    triangles: 
-  - direction: Left
-    vertData: []
-    triangles: 
-  - direction: Right
-    vertData: []
-    triangles: 
+    _triangles: 000000000100000003000000030000000100000002000000
+  - _direction: Bottom
+    _vertData: []
+    _triangles: 
+  - _direction: Left
+    _vertData: []
+    _triangles: 
+  - _direction: Right
+    _vertData: []
+    _triangles: 

@@ -4,13 +4,15 @@ using UnityEngine;
 
 
 [System.Serializable]
-public class MenuSettings
+[CreateAssetMenu(fileName = "MenuSettings", menuName = "MinecraftAsset/MenuSettings")]
+public class MenuSettings : ScriptableObject
 {
     [Header("Game Data")]
     [SerializeField]
-    private string _version = "0.0.0.01";
+    private string _version;
 
     [Header("Performance")]
+    [SerializeField]
     private int _loadDistance;
     public int LoadDistance { get => _loadDistance; }
 
@@ -30,11 +32,11 @@ public class MenuSettings
     private bool _enableAnimatedChunks;
     public bool EnableAnimatedChunks { get => _enableAnimatedChunks; } 
 
-
     [Header("Controls")]
     [Range(0.1f, 10f)]
     [SerializeField]
-    private float _mouseSensitivity;
+    private float _mouseSensitivity;   
+
     public float MouseSensitivity { get => _mouseSensitivity; } 
 }
 

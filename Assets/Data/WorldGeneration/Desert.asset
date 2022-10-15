@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 604863bef2f81714b90b56811bb2841f, type: 3}
+  m_Name: Desert
+  m_EditorClassIdentifier: 
+  _biomeName: Desert
+  _offset: 6545
+  _scale: 0.058
+  _terrainHeight: 10
+  _terrainScale: 0.05
+  _surfaceBlock: 4
+  _subSurfaceBlock: 4
+  _majorFloraIndex: 1
+  _majorFloraZoneScale: 1
+  _majorFloraZoneThreshold: 1
+  _majorFloraPlacementScale: 0.75
+  _majorFloraPlacementThreshold: 0.8
+  _placeMajorFlora: 1
+  _maxHeight: 12
+  _minHeight: 5
+  _lodes:
+  - _nodeName: Dirt
+    _blockID: 5
+    _minHeight: 1
+    _maxHeight: 255
+    _scale: 0.1
+    _threshold: 0.5
+    _noiseOffset: 0
+  - _nodeName: Sand
+    _blockID: 4
+    _minHeight: 30
+    _maxHeight: 60
+    _scale: 0.2
+    _threshold: 0.6
+    _noiseOffset: 500
+  - _nodeName: Caves
+    _blockID: 0
+    _minHeight: 5
+    _maxHeight: 60
+    _scale: 0.1
+    _threshold: 0.55
+    _noiseOffset: 43534

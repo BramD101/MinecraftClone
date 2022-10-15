@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d37435ae615bde743be491caff89f166, type: 3}
+  m_Name: Cactus Top
+  m_EditorClassIdentifier: 
+  _voxelType: 32
+  _isSolid: 1
+  _meshData: {fileID: 11400000, guid: fe97b2490d5bc43428dcffea7f7f2c44, type: 2}
+  _isWater: 0
+  _opacity: 15
+  _icon: {fileID: 21300018, guid: 2822219ca9b3cfc40aec85f96a4e33cd, type: 3}
+  _isActive: 0
+  _backFaceTexture: 18
+  _frontFaceTexture: 18
+  _topFaceTexture: 17
+  _bottomFaceTexture: 19
+  _leftFaceTexture: 18
+  _rightFaceTexture: 18
