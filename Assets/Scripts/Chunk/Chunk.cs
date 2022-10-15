@@ -25,9 +25,10 @@ public class Chunk
         _gameObject.UpdateMesh(meshData);
     }
 
-    public (Voxel[,,], Dictionary<ChunkCoord,Queue<VoxelMod>>) CreateOrRetrieveVoxelmap(ChunkVoxelMapRepository chunkRepository)
+    public WorldGenerationData CreateOrRetrieveVoxelmap(ChunkVoxelMapRepository chunkRepository)
     {
-        return chunkRepository.CreateOrRetrieveChunkVoxelMap(ChunkCoord);       
+        return chunkRepository.CreateOrRetrieveChunkVoxelMap(ChunkCoord);
+
     }
 
     public bool TrySetVoxelMap(Voxel[,,] map)

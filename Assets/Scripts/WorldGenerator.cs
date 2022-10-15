@@ -7,11 +7,11 @@ public class WorldGenerator
     private readonly WorldGenerationSettings _settings;
 
     public WorldGenerator(WorldGenerationSettings settings)
-    {       
+    {
         _settings = settings;
     }
 
-    public (Voxel[,,], Dictionary<ChunkCoord, Queue<VoxelMod>>) GenerateChunkVoxelMap(ChunkCoord coord)
+    public WorldGenerationData GenerateChunkVoxelMap(ChunkCoord coord)
     {
         Voxel[,,] voxelMap = new Voxel[VoxelData.ChunkWidth, VoxelData.ChunkHeight, VoxelData.ChunkWidth];
 
@@ -43,7 +43,7 @@ public class WorldGenerator
             }
         }
 
-        return (voxelMap, voxelModifications);
+        return new WorldGenerationData { Map = voxelMap, Structures = voxelModifications };
     }
 
 
@@ -160,4 +160,8 @@ public class WorldGenerator
         return (voxelType, structure);
     }
 }
-
+public struct WorldGenerationData
+{
+    public Voxel[,,] Map { get; set; }
+    public Dictionary<ChunkCoord, Queue<VoxelMod>> Structures { get; set; }
+}

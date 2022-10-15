@@ -9,7 +9,7 @@ public class ChunkVoxelMapRepository
         _worldGenerator = worldGenerator;
     }
 
-    public (Voxel[,,], Dictionary<ChunkCoord, Queue<VoxelMod>>) CreateOrRetrieveChunkVoxelMap(ChunkCoord Coord)
+    public WorldGenerationData CreateOrRetrieveChunkVoxelMap(ChunkCoord Coord)
     {
         return _worldGenerator.GenerateChunkVoxelMap(Coord);
     }
