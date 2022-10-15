@@ -13,7 +13,7 @@ public class WorldGenerator
 
     public WorldGenerationData GenerateChunkVoxelMap(ChunkCoord coord)
     {
-        Voxel[,,] voxelMap = new Voxel[VoxelData.ChunkWidth, VoxelData.ChunkHeight, VoxelData.ChunkWidth];
+        VoxelMinimal[,,] voxelMap = new VoxelMinimal[VoxelData.ChunkWidth, VoxelData.ChunkHeight, VoxelData.ChunkWidth];
 
         Dictionary<ChunkCoord, Queue<VoxelMod>> voxelModifications = new();
         for (int x = 0; x < VoxelData.ChunkWidth; x++)
@@ -43,12 +43,24 @@ public class WorldGenerator
             }
         }
 
-        return new WorldGenerationData { Map = voxelMap, Structures = voxelModifications };
+        return new WorldGenerationData(coord, voxelMap, voxelModifications );
     }
 
 
     private (VoxelType, Queue<VoxelMod>) GenerateChunkVoxel(GlobalVoxelPosition<int> globPos)
     {
+        //debug
+        //if(globPos.Y >= 1)
+        //{
+        //    return (VoxelType.Air, new Queue<VoxelMod>());
+        //}
+        //else
+        //{
+        //    return (VoxelType.Dirt, new Queue<VoxelMod>());
+        //}
+
+
+
         BiomeAttributes[] biomes = _settings.Biomes;
         /* IMMUTABLE PASS */
 
@@ -162,6 +174,15 @@ public class WorldGenerator
 }
 public struct WorldGenerationData
 {
-    public Voxel[,,] Map { get; set; }
+    public ChunkCoord ChunkCoord { get; set; }
+    public VoxelMinimal[,,] Map { get; set; }
     public Dictionary<ChunkCoord, Queue<VoxelMod>> Structures { get; set; }
+
+    public WorldGenerationData(ChunkCoord chunkCoord, VoxelMinimal[,,] map, Dictionary<ChunkCoord, Queue<VoxelMod>> structures)
+    {
+        ChunkCoord = chunkCoord;
+        Map = map;
+        Structures = structures;
+
+    }
 }

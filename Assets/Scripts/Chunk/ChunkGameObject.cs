@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -14,18 +15,24 @@ public class ChunkGameObject
         set => _object.SetActive(value);
     }
 
-    public ChunkGameObject()
+    public ChunkGameObject(GameSettings settings, Transform worldTransform, ChunkCoord coord)
     {
         _object = new GameObject();
         _meshFilter = _object.AddComponent<MeshFilter>();
         _meshRenderer = _object.AddComponent<MeshRenderer>();
-    }
-    ~ChunkGameObject()
-    {
-        UnityEngine.Object.Destroy(_object);
+
+        Material[] materials = new Material[3];
+        materials[0] = settings.Material;
+        materials[1] = settings.TransparentMaterial;
+        materials[2] = settings.WaterMaterial;
+        _meshRenderer.materials = materials;
+
+        _object.transform.SetParent(worldTransform);
+        _object.transform.position = new Vector3(coord.X * VoxelData.ChunkWidth, 0f, coord.Z * VoxelData.ChunkWidth);
+        _object.name = $"Chunk ({coord.X}, {coord.Z})";
     }
 
-    internal void UpdateMesh(ChunkMeshDataDTO meshData)
+    public void UpdateMesh(ChunkMeshDataDTO meshData)
     {
         var mesh = new Mesh();
         mesh.SetVertices(meshData.Vertices.ToArray());

@@ -1,17 +1,30 @@
-﻿using System.Collections.Generic;
-using System.Threading;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
-public class GameWorld : IGameWorldMainThreadInteractions
+public class GameWorld
 {
     private readonly ChunkInRangeDictionary _chunksInLoadDistance;
     private readonly ChunkInRangeDictionary _chunksInViewDistance;
     private readonly Dictionary<ChunkCoord, Chunk> _chunksOutsideLoadDistance = new();
     private readonly ChunkVoxelMapRepository _voxelMapRepository;
-    private Task<Dictionary<ChunkCoord, WorldGenerationData>> _voxelMapCreationTask;
-
+    private Task<IEnumerable<WorldGenerationData>> _voxelMapCreationTask;
+    private readonly System.Diagnostics.Stopwatch _voxelMapCreationTaskWatch = new();
+    private readonly ConcurrentQueue<ChunkMeshDataDTO> _chunkRenderQueue = new();
     private ChunkCoord _playerChunkCoord;
-
+    private readonly ChunkRenderer _chunkRenderer;
+    private readonly GameSettings _gameSettings;
+    private readonly Transform _worldTransform;
+    public GameWorld(int viewDistance, int loadDistance, ChunkVoxelMapRepository repo
+        , GameSettings gameSettings, Transform worldTransform)
+    {
+        _voxelMapRepository = repo;
+        _chunksInLoadDistance = new(disposeMethod: c => _chunksOutsideLoadDistance.TryAdd(c.ChunkCoord, c), loadDistance);
+        _chunksInViewDistance = new(disposeMethod: c => { }, viewDistance);
+        _chunkRenderer = new ChunkRenderer(this);
+        _gameSettings = gameSettings;
+        _worldTransform = worldTransform;
+    }
     public void Player_Moved(object sender, ChunkCoord args)
     {
         _playerChunkCoord = args;
@@ -24,13 +37,45 @@ public class GameWorld : IGameWorldMainThreadInteractions
     public void Update()
     {
         UpdateCreateVoxelMaps();
-    }
-    public GameWorld(int viewDistance, int loadDistance, ChunkVoxelMapRepository repo)
-    {
-        _voxelMapRepository = repo;
-        _chunksInLoadDistance = new(disposeMethod: c => _chunksOutsideLoadDistance.TryAdd(c.ChunkCoord, c), loadDistance);
-        _chunksInViewDistance = new(disposeMethod: c => { }, viewDistance);
 
+        if (_chunkRenderQueue.TryDequeue(out ChunkMeshDataDTO chunkMeshDataDTO))
+        {
+            if (_chunksInViewDistance.TryGetChunk(chunkMeshDataDTO.ChunkCoord, out Chunk chunk))
+            {
+                chunk.UpdateMesh(chunkMeshDataDTO, _gameSettings, _worldTransform);
+
+            }
+        }
+        RenderChunksInViewDistance();
+    }
+    public bool TryGetVoxel(GlobalVoxelPosition<int> globalPos, out Voxel voxel)
+    {
+        ChunkCoord coord = ChunkCoord.FromGlobalVoxelPosition(globalPos);
+        if (TryGetChunkAtChunkCoord(coord, out Chunk chunk))
+        {
+            RelativeToChunkVoxelPosition<int> relPos = RelativeToChunkVoxelPosition<int>.CreateFromGlobal(globalPos);
+            voxel = chunk.GetVoxel(relPos);
+            return true;
+        }
+        voxel = null;
+        return false;
+    }
+
+    private void RenderChunksInViewDistance()
+    {
+        foreach (Chunk chunk in _chunksInViewDistance.Chunks)
+        {
+            if (chunk.RenderStatus == RenderStatus.NotUpToDate && chunk.IsFilledIn)
+            {
+                chunk.StartRender();
+
+                Task task = Task.Run(() =>
+                {
+                    ChunkMeshDataDTO chunkMeshData = _chunkRenderer.CreateChunkMeshData(chunk.ChunkCoord, chunk.ChunkVoxelMap);
+                    _chunkRenderQueue.Enqueue(chunkMeshData);
+                });
+            }
+        }
     }
     private void UpdateChunksInRange()
     {
@@ -45,18 +90,10 @@ public class GameWorld : IGameWorldMainThreadInteractions
             bool success = _chunksInLoadDistance.TryGetChunk(c, out Chunk outChunk);
             return (outChunk, success);
         });
-
-        StartCreateVoxelMaps();
-
-    }
-
-
-    private void StartCreateVoxelMaps()
-    {
-
         if (_voxelMapCreationTask == null)
         {
-            _voxelMapCreationTask = Task.Run(() => CreateVoxelMapsTask(_chunksInLoadDistance.Chunks));
+            _voxelMapCreationTask = Task.Run(() => CreateVoxelMapsTaskAsync(_chunksInLoadDistance.Chunks));
+            _voxelMapCreationTaskWatch.Start();
         }
     }
     private void UpdateCreateVoxelMaps()
@@ -65,39 +102,49 @@ public class GameWorld : IGameWorldMainThreadInteractions
         {
             if (_voxelMapCreationTask.IsCompletedSuccessfully)
             {
-                var watch = System.Diagnostics.Stopwatch.StartNew();
+                _voxelMapCreationTaskWatch.Stop();
+                Debug.Log($"CreateVoxelMapsTaskAsync(async) afgehandeld in {_voxelMapCreationTaskWatch.ElapsedMilliseconds}ms");
+                _voxelMapCreationTaskWatch.Reset();
+
+                System.Diagnostics.Stopwatch watch = System.Diagnostics.Stopwatch.StartNew();
 
                 OnVoxelMapCreationTaskSuccessfull(_voxelMapCreationTask.Result);
                 _voxelMapCreationTask = null;
 
                 watch.Stop();
-                Debug.Log($"CreateVoxelMapsTask(async) afgehandeld in {watch.ElapsedMilliseconds}ms");
+                Debug.Log($"OnVoxelMapCreationTaskSuccessfull afgehandeld in {watch.ElapsedMilliseconds}ms");
             }
         }
     }
-
-    private void OnVoxelMapCreationTaskSuccessfull(Dictionary<ChunkCoord, WorldGenerationData> result)
+    private void OnVoxelMapCreationTaskSuccessfull(IEnumerable<WorldGenerationData> worldGenerationData)
     {
         // set voxels 
         Dictionary<ChunkCoord, Queue<VoxelMod>> voxelmods = new();
-        foreach (ChunkCoord coord in result.Keys)
+        foreach (WorldGenerationData result in worldGenerationData)
         {
-            if (TryGetChunkAtChunkCoord(coord, out Chunk chunk))
+            if (TryGetChunkAtChunkCoord(result.ChunkCoord, out Chunk chunk))
             {
-                chunk.TrySetVoxelMap(result[coord].Map);
+                //debug
+                if (result.Map == null)
+                {
+                    throw new System.Exception("result.Map == null");
+                }
+
+
+                chunk.TrySetVoxelMap(result.Map);
             }
         }
 
         // aggregate voxelmods
-        foreach (ChunkCoord coord in result.Keys)
+        foreach (WorldGenerationData result in worldGenerationData)
         {
-            foreach (ChunkCoord vmCoord in result[coord].Structures.Keys)
+            foreach (ChunkCoord vmCoord in result.Structures.Keys)
             {
                 if (!voxelmods.ContainsKey(vmCoord))
                 {
                     voxelmods.Add(vmCoord, new Queue<VoxelMod>());
                 }
-                Queue<VoxelMod> voxelModsinStruct = result[coord].Structures[vmCoord];
+                Queue<VoxelMod> voxelModsinStruct = result.Structures[vmCoord];
                 while (voxelModsinStruct.TryDequeue(out VoxelMod vm))
                 {
                     voxelmods[vmCoord].Enqueue(vm);
@@ -117,68 +164,24 @@ public class GameWorld : IGameWorldMainThreadInteractions
             chunk.EnqueueVoxelMods(voxelmods[coord]);
         }
     }
-
-
-
-
-    private Dictionary<ChunkCoord, WorldGenerationData> CreateVoxelMapsTask(List<Chunk> chunks)
+    private async Task<IEnumerable<WorldGenerationData>> CreateVoxelMapsTaskAsync(List<Chunk> chunks)
     {
-        var watch = System.Diagnostics.Stopwatch.StartNew();
         Debug.Log("Start CreateVoxelMapsTask(async)");
 
-        Dictionary<ChunkCoord, WorldGenerationData> worldGenData = new();
+        ConcurrentDictionary<ChunkCoord, WorldGenerationData> worldGenDataDict = new();
+
+        List<Task<WorldGenerationData>> tasks = new();
         foreach (Chunk chunk in chunks)
         {
             if (!chunk.IsFilledIn)
             {
-                worldGenData.Add(chunk.ChunkCoord, chunk.CreateOrRetrieveVoxelmap(_voxelMapRepository));
+                tasks.Add(Task.Run(() => chunk.CreateOrRetrieveVoxelmap(_voxelMapRepository)));
             }
         }
-        watch.Stop();
-        Debug.Log($"CreateVoxelMapsTask(async) afgehandeld in {watch.ElapsedMilliseconds}ms");
-        return worldGenData;
+        WorldGenerationData[] results = await Task.WhenAll(tasks);
+
+        return results;
     }
-
-    //Dictionary<ChunkCoord, Queue<VoxelMod>> voxelMods = new();
-
-    //foreach (Chunk chunk in _chunksInLoadDistance.Chunks)
-    //{
-    //    if (!chunk.IsFilledIn)
-    //    {
-    //        WorldGenerationData data = chunk.CreateOrRetrieveVoxelmap(_voxelMapRepository);
-    //        if (!chunk.TrySetVoxelMap(data.Map))
-    //        {
-    //            throw new Exception(chunk.ChunkCoord + " Voxelmap generated for chunk which already contained one!");
-    //        }
-
-    //        foreach (ChunkCoord chunkCoord in data.Structures.Keys)
-    //        {
-    //            if (!voxelMods.ContainsKey(chunkCoord))
-    //            {
-    //                voxelMods.Add(chunkCoord, new Queue<VoxelMod>());
-    //            }
-    //            while (data.Structures[chunkCoord].TryDequeue(out VoxelMod vm))
-    //            {
-    //                voxelMods[chunkCoord].Enqueue(vm);
-    //            }
-
-    //        }
-    //    }
-    //}
-
-    //foreach (ChunkCoord coord in voxelMods.Keys)
-    //{
-    //    if (!TryGetChunkAtChunkCoord(coord, out Chunk chunk))
-    //    {
-    //        chunk = new Chunk(coord);
-    //        _chunksOutsideLoadDistance.Add(coord, chunk);
-    //    }
-    //    chunk.EnqueueVoxelMods(voxelMods[coord]);
-    //}
-
-
-
-
     private bool TryGetChunkAtChunkCoord(ChunkCoord coord, out Chunk chunk)
     {
         if (_chunksInLoadDistance.TryGetChunk(coord, out chunk))

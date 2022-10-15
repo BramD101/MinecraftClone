@@ -7,7 +7,8 @@ public class VoxelMeshData : ScriptableObject {
     [SerializeField]
     private VoxelMeshDataType _blockName;
     [SerializeField]
-    public FaceMeshData[] _faces; // 6 faces using our established winding order.
+    private FaceMeshData[] _faces; // 6 faces using our established winding order.
+    public FaceMeshData[] Faces => _faces;
 
 }
 
@@ -44,8 +45,11 @@ public class FaceMeshData {
     private string _direction; // Purely to make things easier to read in the inspector.
     [SerializeField]
     private VertData[] _vertData;
+    public VertData[] VertData => _vertData;
+
     [SerializeField]
     private int[] _triangles;
+    public int[] Triangles => _triangles;
 
     public VertData GetVertData(int index) {
 

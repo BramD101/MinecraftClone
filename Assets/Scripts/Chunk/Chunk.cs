@@ -1,44 +1,63 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using UnityEditor;
-using UnityEditor.Search;
 using UnityEngine;
 
 public class Chunk
 {
 
-    private ChunkVoxelMap _map =new();
-    private Task _mapGenerationTask = null;
+    private readonly ChunkVoxelMap _map = new();
+    public ChunkVoxelMap ChunkVoxelMap => _map;
 
-    private readonly ChunkGameObject _gameObject = null;
+    private ChunkGameObject _gameObject = null;
     public ChunkCoord ChunkCoord { get; private set; }
     public bool IsFilledIn => _map.IsFilledIn;
+
+    public RenderStatus RenderStatus { get; private set; } = RenderStatus.NotUpToDate; 
 
     public Chunk(ChunkCoord chunkCoord)
     {
         ChunkCoord = chunkCoord;
     }
 
-    public void UpdateMesh(ChunkMeshDataDTO meshData)
+    public void UpdateMesh(ChunkMeshDataDTO meshData, GameSettings gameSettings, Transform worldTransform)
     {
+        if(_gameObject == null)
+        {
+            _gameObject = new ChunkGameObject(gameSettings,worldTransform, ChunkCoord);
+        }
+
         _gameObject.UpdateMesh(meshData);
+        RenderStatus = RenderStatus.UpToDate;
     }
 
     public WorldGenerationData CreateOrRetrieveVoxelmap(ChunkVoxelMapRepository chunkRepository)
     {
         return chunkRepository.CreateOrRetrieveChunkVoxelMap(ChunkCoord);
-
     }
 
-    public bool TrySetVoxelMap(Voxel[,,] map)
+    public bool TrySetVoxelMap(VoxelMinimal[,,] map)
     {
         return _map.TrySetMap(map);
+    }
+    public Voxel GetVoxel(RelativeToChunkVoxelPosition<int> relPos)
+    {
+        return _map.GetVoxel(relPos);
     }
 
     public void EnqueueVoxelMods(Queue<VoxelMod> voxelMods)
     {
         _map.EnqueueVoxelMods(voxelMods);
     }
-}
 
+    public void StartRender()
+    {
+        RenderStatus = RenderStatus.Rendering;
+    }
+}
+public enum RenderStatus
+{
+    UpToDate,
+    Rendering,
+    NotUpToDate
+}

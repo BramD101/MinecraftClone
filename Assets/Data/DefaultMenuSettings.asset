@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _version: 1.0
   _loadDistance: 10
-  _viewDistance: 4
+  _viewDistance: 8
   _dynamicLighting: 0
   _clouds: 0
   _enableAnimatedChunks: 0
