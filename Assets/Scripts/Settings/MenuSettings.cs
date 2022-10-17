@@ -36,7 +36,6 @@ public class MenuSettings : ScriptableObject
     [Range(0.1f, 10f)]
     [SerializeField]
     private float _mouseSensitivity;   
-
     public float MouseSensitivity { get => _mouseSensitivity; } 
 }
 

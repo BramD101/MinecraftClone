@@ -259,7 +259,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 2066153008}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -341,7 +342,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &310381716
 GameObject:
@@ -373,7 +374,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &310381718
 MonoBehaviour:
@@ -414,7 +415,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &777917610
 RectTransform:
   m_ObjectHideFlags: 0
@@ -579,7 +580,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!224 &899402960 stripped
 RectTransform:
@@ -1389,7 +1390,7 @@ Transform:
   m_Children:
   - {fileID: 1452654171}
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1523407929
 GameObject:
@@ -1402,13 +1403,14 @@ GameObject:
   - component: {fileID: 1523407930}
   - component: {fileID: 1523407932}
   - component: {fileID: 1523407931}
+  - component: {fileID: 1523407933}
   m_Layer: 5
   m_Name: Debug Screen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1523407930
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1471,6 +1473,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1523407929}
   m_CullTransparentMesh: 0
+--- !u!114 &1523407933
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1523407929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 600fbb01da88f8143a69921bc01b0854, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _player: {fileID: 0}
 --- !u!1 &1616302742
 GameObject:
   m_ObjectHideFlags: 0
@@ -1878,7 +1893,7 @@ Transform:
   m_Children:
   - {fileID: 1764297605}
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1897109342
 GameObject:
@@ -2122,7 +2137,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &2065706178
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2202,7 +2217,7 @@ RectTransform:
   - {fileID: 1913627940}
   - {fileID: 1745233255}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -2234,14 +2249,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2066153006}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1616302746}
-  m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_Father: {fileID: 215957293}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2066153010
 MonoBehaviour:
@@ -2258,7 +2273,10 @@ MonoBehaviour:
   _highlightBlock: {fileID: 1889892093}
   _placeBlock: {fileID: 1454871628}
   _toolbar: {fileID: 0}
-  _jumpSpeed: 6
+  _camera: {fileID: 1616302746}
+  _worldTransform: {fileID: 215957293}
+  _verticalVelocity: 0
+  _movementDirection: {x: 0, y: 0}
 --- !u!114 &2066153011
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2272,7 +2290,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Actions: {fileID: -944628639613478452, guid: 0ca97116aa1c3cb48811362d8e84bd9c, type: 3}
-  m_NotificationBehavior: 0
+  m_NotificationBehavior: 2
   m_UIInputModule: {fileID: 0}
   m_DeviceLostEvent:
     m_PersistentCalls:
@@ -2283,10 +2301,74 @@ MonoBehaviour:
   m_ControlsChangedEvent:
     m_PersistentCalls:
       m_Calls: []
-  m_ActionEvents: []
+  m_ActionEvents:
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2066153010}
+        m_TargetAssemblyTypeName: Player, Assembly-CSharp
+        m_MethodName: OnJump
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 1
+    m_ActionId: 299b1ff2-df14-485c-ad5a-6fa49a5e3fef
+    m_ActionName: GameControls/Jump[/Keyboard/space]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2066153010}
+        m_TargetAssemblyTypeName: Player, Assembly-CSharp
+        m_MethodName: OnMove
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 1
+    m_ActionId: 0328e89a-0291-4da1-a0ef-86e854858cd8
+    m_ActionName: GameControls/Move[/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2066153010}
+        m_TargetAssemblyTypeName: Player, Assembly-CSharp
+        m_MethodName: OnLookAround
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 1
+    m_ActionId: c6bff8fc-b149-4a3f-959c-4cec51df2256
+    m_ActionName: GameControls/LookAround[/Mouse/delta/up,/Mouse/delta/down,/Mouse/delta/left,/Mouse/delta/right]
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2066153010}
+        m_TargetAssemblyTypeName: Player, Assembly-CSharp
+        m_MethodName: OnSprint
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 1
+    m_ActionId: 4b0a76e9-21ae-4501-8223-69b05e972b88
+    m_ActionName: GameControls/Sprint[/Keyboard/leftShift]
   m_NeverAutoSwitchControlSchemes: 1
   m_DefaultControlScheme: Keyboard & Mouse
-  m_DefaultActionMap: Movement
+  m_DefaultActionMap: GameControls
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
 --- !u!1001 &2085476028

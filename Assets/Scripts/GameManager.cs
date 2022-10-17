@@ -54,6 +54,7 @@ public class GameManager : MonoBehaviour
         _player.PlayerMovedChunks += _world.Player_Moved;
         _player.GameWorld = _world;
         _player.Settings = _settings.PlayerSettings;
+        _player.MenuSettings = _settings.MenuSettings;
 
         _player.SetActive(true);
         Debug.Log($"World is Ready, time since start: {Time.realtimeSinceStartup}s");

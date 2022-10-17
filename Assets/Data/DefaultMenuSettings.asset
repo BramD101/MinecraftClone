@@ -18,4 +18,4 @@ MonoBehaviour:
   _dynamicLighting: 0
   _clouds: 0
   _enableAnimatedChunks: 0
-  _mouseSensitivity: 0
+  _mouseSensitivity: 1
