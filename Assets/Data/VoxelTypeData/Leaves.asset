@@ -13,12 +13,13 @@ MonoBehaviour:
   m_Name: Leaves
   m_EditorClassIdentifier: 
   _voxelType: 11
-  _isSolid: 0
+  _isSolid: 1
   _meshData: {fileID: 11400000, guid: fe97b2490d5bc43428dcffea7f7f2c44, type: 2}
   _isWater: 0
   _opacity: 5
   _icon: {fileID: 21300018, guid: 2822219ca9b3cfc40aec85f96a4e33cd, type: 3}
   _isActive: 0
+  _isGravityAffected: 0
   _backFaceTexture: 16
   _frontFaceTexture: 16
   _topFaceTexture: 16

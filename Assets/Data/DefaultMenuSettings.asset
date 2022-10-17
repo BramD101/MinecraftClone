@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: DefaultMenuSettings
   m_EditorClassIdentifier: 
   _version: 1.0
-  _loadDistance: 10
-  _viewDistance: 8
+  _loadDistance: 2
+  _viewDistance: 1
   _dynamicLighting: 0
   _clouds: 0
   _enableAnimatedChunks: 0

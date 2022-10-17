@@ -1,12 +1,16 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.EventSystems;
+
 public class GameWorld
 {
     private readonly ChunkInRangeDictionary _chunksInLoadDistance;
     private readonly ChunkInRangeDictionary _chunksInViewDistance;
-    private readonly Dictionary<ChunkCoord, Chunk> _chunksOutsideLoadDistance = new();
+    private readonly SortedDictionary<ChunkCoord, Chunk> _chunksOutsideLoadDistance = new();
     private readonly ChunkVoxelMapRepository _voxelMapRepository;
     private Task<IEnumerable<WorldGenerationData>> _voxelMapCreationTask;
     private readonly System.Diagnostics.Stopwatch _voxelMapCreationTaskWatch = new();
@@ -15,6 +19,27 @@ public class GameWorld
     private readonly ChunkRenderer _chunkRenderer;
     private readonly GameSettings _gameSettings;
     private readonly Transform _worldTransform;
+
+    private bool _worldIsReady = false;
+    public bool WorldIsReady
+    {
+        get
+        {
+            if (!_worldIsReady)
+            {
+                if (_chunksInViewDistance.Chunks.All(c => c.IsRendered()))
+                {
+                    OnWorldIsReady();
+                    _worldIsReady = true;
+                }
+            }
+
+            return _worldIsReady;
+        }
+    }
+
+    public event EventHandler WorldIsReadyEvent;
+
     public GameWorld(int viewDistance, int loadDistance, ChunkVoxelMapRepository repo
         , GameSettings gameSettings, Transform worldTransform)
     {
@@ -30,6 +55,11 @@ public class GameWorld
         _playerChunkCoord = args;
         UpdateChunksInRange();
     }
+    private void OnWorldIsReady()
+    {
+        WorldIsReadyEvent?.Invoke(this, EventArgs.Empty);
+    }
+
     public void Start()
     {
         UpdateChunksInRange();
@@ -54,12 +84,22 @@ public class GameWorld
         if (TryGetChunkAtChunkCoord(coord, out Chunk chunk))
         {
             RelativeToChunkVoxelPosition<int> relPos = RelativeToChunkVoxelPosition<int>.CreateFromGlobal(globalPos);
-            voxel = chunk.GetVoxel(relPos);
-            return true;
+            return chunk.TryGetVoxel(relPos, out voxel);            
         }
         voxel = null;
         return false;
     }
+    public bool ContainsSolidVoxel(GlobalVoxelPosition<float> gPos)
+    {
+        GlobalVoxelPosition<int> globalVoxelPosInt = new GlobalVoxelPosition<int>(Mathf.FloorToInt(gPos.X), Mathf.FloorToInt(gPos.Y), Mathf.FloorToInt(gPos.Z));
+
+        if (TryGetVoxel(globalVoxelPosInt, out Voxel voxel))
+        {
+            return voxel.IsSolid;
+        }
+        return false;
+    }
+
 
     private void RenderChunksInViewDistance()
     {
@@ -194,5 +234,7 @@ public class GameWorld
         }
         return false;
     }
+
+
 }
 

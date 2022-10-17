@@ -23,7 +23,7 @@ public class WorldGenerator
                 for (int z = 0; z < VoxelData.ChunkWidth; z++)
                 {
                     RelativeToChunkVoxelPosition<int> relativeVoxelPositing = new(x, y, z);
-                    GlobalVoxelPosition<int> globPos = GlobalVoxelPosition<int>.CreateFromRelativeToChunkPosition(relativeVoxelPositing, coord);
+                    GlobalVoxelPosition<int> globPos = GlobalVoxelPosition<int>.FromRelativeToChunkPosition(relativeVoxelPositing, coord);
 
 
                     Queue<VoxelMod> structure;
@@ -49,14 +49,14 @@ public class WorldGenerator
 
     private (VoxelType, Queue<VoxelMod>) GenerateChunkVoxel(GlobalVoxelPosition<int> globPos)
     {
-        //debug
-        //if(globPos.Y >= 1)
+        // debug
+        //if (globPos.Z >= 2 && globPos.X >= 2 && globPos.Y >= 1)
         //{
         //    return (VoxelType.Air, new Queue<VoxelMod>());
         //}
         //else
         //{
-        //    return (VoxelType.Dirt, new Queue<VoxelMod>());
+        //    return (VoxelType.Sand, new Queue<VoxelMod>());
         //}
 
 

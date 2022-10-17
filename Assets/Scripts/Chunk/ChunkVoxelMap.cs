@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 public class ChunkVoxelMap
 {
@@ -19,7 +20,6 @@ public class ChunkVoxelMap
     {
         if (!IsInVoxelMap(pos))
         {
-
             throw new System.Exception($"Not in voxelmap: {pos.X},{pos.Y},{pos.Z}");
         }
 
@@ -27,6 +27,18 @@ public class ChunkVoxelMap
 
         return new Voxel(voxel, GameSettings.Blocktypes[(int)voxel.Type]);
     }
+    public bool TryGetVoxel(RelativeToChunkVoxelPosition<int> relPos, out Voxel voxel)
+    {
+        if(!IsInVoxelMap(relPos))
+        {
+            voxel = null;
+            return false;
+        }
+
+        voxel = GetVoxel(relPos);
+        return true;
+    }
+
     public bool TrySetMap(VoxelMinimal[,,] map)
     {
         if (IsFilledIn) { return false; }
@@ -55,6 +67,8 @@ public class ChunkVoxelMap
             && pos.Y >= 0 && pos.Y < VoxelData.ChunkHeight
             && pos.Z >= 0 && pos.Z < VoxelData.ChunkWidth;
     }
+
+    
 }
 
 public struct VoxelMod

@@ -44,6 +44,10 @@ public class Chunk
     {
         return _map.GetVoxel(relPos);
     }
+    public bool TryGetVoxel(RelativeToChunkVoxelPosition<int> relPos, out Voxel voxel)
+    {
+        return _map.TryGetVoxel(relPos, out voxel);
+    }
 
     public void EnqueueVoxelMods(Queue<VoxelMod> voxelMods)
     {
@@ -54,6 +58,13 @@ public class Chunk
     {
         RenderStatus = RenderStatus.Rendering;
     }
+
+    public bool IsRendered()
+    {
+        return RenderStatus == RenderStatus.UpToDate;
+    }
+
+    
 }
 public enum RenderStatus
 {

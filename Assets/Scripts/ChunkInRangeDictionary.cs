@@ -4,7 +4,7 @@ using System.Linq;
 
 public class ChunkInRangeDictionary
 {
-    private readonly Dictionary<ChunkCoord, Chunk> _chunksInDistance = new();
+    private readonly SortedDictionary<ChunkCoord, Chunk> _chunksInDistance = new();
 
 
     private readonly Action<Chunk> _disposeMethod;

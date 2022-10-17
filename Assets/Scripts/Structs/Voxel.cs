@@ -15,6 +15,10 @@ public class Voxel
     public bool IsSolid => _voxelTypeData.IsSolid;
     public VoxelMeshData MeshData => _voxelTypeData.MeshData;
     
+
+
+
+
     public Voxel(VoxelMinimal voxelMinimal, VoxelTypeData voxelTypeData)
     {
         _voxelMinimal = voxelMinimal;

@@ -1,4 +1,5 @@
-﻿using Unity.VisualScripting;
+﻿using System;
+using Unity.VisualScripting;
 using UnityEngine;
 using static UnityEditor.PlayerSettings;
 
@@ -9,8 +10,6 @@ public class ChunkRenderer
     {
         _gameWorld = gameWorld;
     }
-
-
     public ChunkMeshDataDTO CreateChunkMeshData(ChunkCoord coord, ChunkVoxelMap voxelMap)
     {
         ChunkMeshDataDTO chunkMeshDataDTO = new();
@@ -24,7 +23,7 @@ public class ChunkRenderer
                 {
                     RelativeToChunkVoxelPosition<int> pos = new(x, y, z);
 
-                    chunkMeshDataDTO = AddVoxelMeshData(chunkMeshDataDTO, pos, coord, voxelMap);
+                    AddVoxelMeshDataToMeshData(ref chunkMeshDataDTO, pos, coord, voxelMap);
                 }
             }
         }
@@ -32,10 +31,9 @@ public class ChunkRenderer
     }
 
 
-    private ChunkMeshDataDTO AddVoxelMeshData(ChunkMeshDataDTO chunkMeshDataDTO,
+    private void AddVoxelMeshDataToMeshData(ref ChunkMeshDataDTO chunkMeshDataDTO,
         RelativeToChunkVoxelPosition<int> relPos, ChunkCoord coord, ChunkVoxelMap voxelMap)
-    {
-       
+    {     
 
         Voxel voxel = voxelMap.GetVoxel(relPos);
 
@@ -43,7 +41,7 @@ public class ChunkRenderer
 
         if (!voxel.IsSolid)
         {
-            return chunkMeshDataDTO;
+            return;
         }
 
         for (int p = 0; p < 6; p++)
@@ -52,6 +50,9 @@ public class ChunkRenderer
             Direction direction = (Direction)p;
             Vector3Int offset = GetRelativePosition(direction);
             RelativeToChunkVoxelPosition<int> neighbourRelCoord = new(relPos.X + offset.x, relPos.Y + offset.y, relPos.Z + offset.z);
+
+
+            
 
 
             if (neighbourRelCoord.Y < 0 || neighbourRelCoord.Y >= VoxelData.ChunkHeight)
@@ -66,16 +67,15 @@ public class ChunkRenderer
             }
             else
             {
-                GlobalVoxelPosition<int> absPos = GlobalVoxelPosition<int>.CreateFromRelativeToChunkPosition(neighbourRelCoord, coord);
+                GlobalVoxelPosition<int> absPos = GlobalVoxelPosition<int>.FromRelativeToChunkPosition(neighbourRelCoord, coord);
                 if (!_gameWorld.TryGetVoxel(absPos, out neighbour))
                 {
-                    neighbour = Voxel.CreateFromType(VoxelType.Air);
+                    throw new Exception("Out of world");
                 }
             }
 
             if (neighbour.RenderNeighborFaces && !(voxel.IsWater && voxelMap.GetVoxel(new RelativeToChunkVoxelPosition<int>(relPos.X, relPos.Y + 1, relPos.Z)).IsWater))
             {
-
                 float lightLevel = 15;
                 int faceVertCount = 0;
 
@@ -117,7 +117,6 @@ public class ChunkRenderer
 
             }
         }
-        return chunkMeshDataDTO;
     }
     private Vector2 GetUvs(int textureID, Vector2 uv)
     {
