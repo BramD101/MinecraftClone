@@ -8,24 +8,15 @@ public struct ChunkCoord : IComparable<ChunkCoord>
     {
         X = x;
         Z = z;
-    }
-  
+    } 
  
-    public static ChunkCoord FromGlobalVoxelPosition(GlobalVoxelPosition<float> position)
+  
+    public static ChunkCoord FromGlobalVoxelPosition(GlobalVoxelPos position)
     {
         return new ChunkCoord(
-            (int)MathF.Floor(position.X / VoxelData.ChunkWidth),
-            (int)MathF.Floor(position.Z / VoxelData.ChunkWidth));
+            (int)MathF.Floor((float)position.X / VoxelData.ChunkWidth),
+            (int)MathF.Floor((float)position.Z / VoxelData.ChunkWidth));
     }
-    public static ChunkCoord FromGlobalVoxelPosition(GlobalVoxelPosition<int> position)
-    {
-        return new ChunkCoord(
-            (int)MathF.Floor(position.X / VoxelData.ChunkWidth),
-            (int)MathF.Floor(position.Z / VoxelData.ChunkWidth));
-    }
-
-
-
     public override string ToString()
     {
         return $"(X: {X}, Z: {Z})";

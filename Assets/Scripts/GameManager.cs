@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.InputSystem.Utilities;
 
 public class GameManager : MonoBehaviour
 {
     private Settings _settings;
     private Player _player;
-    private GameWorld _world;
+    private World _world;
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     private void Start()
@@ -17,7 +18,7 @@ public class GameManager : MonoBehaviour
         VoxelData.seed = 75;
         Debug.Log($"Seed: {VoxelData.seed}");
 
-
+        
         _settings = GameObject.Find("GameManager").GetComponent<Settings>();
         _player = GameObject.Find("Player").GetComponent<Player>();
 
@@ -27,7 +28,7 @@ public class GameManager : MonoBehaviour
         ChunkVoxelMap.GameSettings = _settings.GameSettings;
 
         var worldTransform = GameObject.Find("World").GetComponent<Transform>();
-        _world = new GameWorld(
+        _world = new World(
             _settings.MenuSettings.ViewDistance 
             ,_settings.MenuSettings.LoadDistance
             ,repo
@@ -35,26 +36,26 @@ public class GameManager : MonoBehaviour
             , worldTransform);
         _world.WorldIsReadyEvent += GameWorld_IsReady;
         _world.Start();
-        
 
+        _player.PlayerMovedChunks += _world.Player_Moved;
+        _player.LoadedWorld = new WorldPlayerInteractons(_world);
+        _player.Settings = _settings.PlayerSettings;
+        _player.MenuSettings = _settings.MenuSettings;
     }
     private void Update()
     {
-        _world.Update();
-
-        if (_world.WorldIsReady)
+        var startTime = Time.realtimeSinceStartup;
+        _world.PrintRenderedChunkToScreen();
+        if (!_world.WorldIsReady)
         {
-
+            return;
         }
-        
+        Debug.Log("GameManager.Update" + (Time.realtimeSinceStartup - startTime) * 1000 + "ms");
     }
 
     public void GameWorld_IsReady(object sender, EventArgs args)
     {
-        _player.PlayerMovedChunks += _world.Player_Moved;
-        _player.GameWorld = _world;
-        _player.Settings = _settings.PlayerSettings;
-        _player.MenuSettings = _settings.MenuSettings;
+     
 
         _player.SetActive(true);
         Debug.Log($"World is Ready, time since start: {Time.realtimeSinceStartup}s");

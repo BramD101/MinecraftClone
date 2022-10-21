@@ -4,7 +4,7 @@ using UnityEngine;
 public static class Structure
 {
 
-    public static Queue<VoxelMod> GenerateMajorFlora(int index, GlobalVoxelPosition<int> position, int minTrunkHeight, int maxTrunkHeight)
+    public static Queue<VoxelMod> GenerateMajorFlora(int index, GlobalVoxelPos position, int minTrunkHeight, int maxTrunkHeight)
     {
 
         switch (index)
@@ -22,7 +22,7 @@ public static class Structure
 
     }
 
-    public static Queue<VoxelMod> MakeTree(GlobalVoxelPosition<int> position, int minTrunkHeight, int maxTrunkHeight)
+    public static Queue<VoxelMod> MakeTree(GlobalVoxelPos position, int minTrunkHeight, int maxTrunkHeight)
     {
 
         Queue<VoxelMod> queue = new();
@@ -35,7 +35,7 @@ public static class Structure
         for (int i = 1; i < height; i++)
             queue.Enqueue(new VoxelMod
             {
-                GlobalVoxelPosition = new GlobalVoxelPosition<int>(position.X, position.Y + i, position.Z),
+                GlobalVoxelPosition = new GlobalVoxelPos(position.X, position.Y + i, position.Z),
                 NewVoxelType = VoxelType.Wood
             });
 
@@ -47,7 +47,7 @@ public static class Structure
                 {
                     queue.Enqueue(new VoxelMod
                     {
-                        GlobalVoxelPosition = new GlobalVoxelPosition<int>(position.X + x, position.Y + height + y, position.Z + z),
+                        GlobalVoxelPosition = new GlobalVoxelPos(position.X + x, position.Y + height + y, position.Z + z),
                         NewVoxelType = VoxelType.Leaves
                     });
                 }
@@ -58,7 +58,7 @@ public static class Structure
 
     }
 
-    public static Queue<VoxelMod> MakeCacti(GlobalVoxelPosition<int> position, int minTrunkHeight, int maxTrunkHeight)
+    public static Queue<VoxelMod> MakeCacti(GlobalVoxelPos position, int minTrunkHeight, int maxTrunkHeight)
     {
         Queue<VoxelMod> queue = new();
 
@@ -71,13 +71,13 @@ public static class Structure
         {
             queue.Enqueue(new VoxelMod
             {
-                GlobalVoxelPosition = new GlobalVoxelPosition<int>(position.X, position.Y + i, position.Z),
+                GlobalVoxelPosition = new GlobalVoxelPos(position.X, position.Y + i, position.Z),
                 NewVoxelType = VoxelType.Cactus
             });
         }
         queue.Enqueue(new VoxelMod
         {
-            GlobalVoxelPosition = new GlobalVoxelPosition<int>(position.X, position.Y + height, position.Z),
+            GlobalVoxelPosition = new GlobalVoxelPos(position.X, position.Y + height, position.Z),
             NewVoxelType = VoxelType.CactusTop
         });
 

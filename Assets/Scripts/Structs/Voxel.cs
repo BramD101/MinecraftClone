@@ -24,7 +24,7 @@ public class Voxel
         _voxelMinimal = voxelMinimal;
         _voxelTypeData = voxelTypeData;
     }
-    public int GetTextureID(Direction direction)
+    public int GetTextureID(VoxelDirection direction)
     {
         return _voxelTypeData.GetTextureID(direction);
     }

@@ -1,45 +1,39 @@
 ﻿using System.Numerics;
+using UnityEngine;
 
-public struct GlobalVoxelPosition<T>
+public struct GlobalVoxelPos
 {
-    public T X { get; set; }
-    public T Y { get; set; }
-    public T Z { get; set; }
-    public GlobalVoxelPosition(T x, T y, T z)
+    public int X { get; set; }
+    public int Y { get; set; }
+    public int Z { get; set; }
+    public GlobalVoxelPos(int x, int y, int z)
     {
         X = x;
         Y = y;
         Z = z;
     }
 
-    public static GlobalVoxelPosition<int> FromRelativeToChunkPosition(RelativeToChunkVoxelPosition<int> relPosition, ChunkCoord chunkCoord)
+    public static GlobalVoxelPos FromRelativeToChunkPosition(RelativeVoxelPos relPosition, ChunkCoord chunkCoord)
     {
-        GlobalVoxelPosition<int> globPos = new(
+        GlobalVoxelPos globPos = new(
             relPosition.X + VoxelData.ChunkWidth * chunkCoord.X,
             relPosition.Y,
             relPosition.Z + VoxelData.ChunkWidth * chunkCoord.Z);
 
         return globPos;
     }
-    public static GlobalVoxelPosition<float> FromRelativeToChunkPosition(RelativeToChunkVoxelPosition<float> relPosition, ChunkCoord chunkCoord)
+   
+
+    public static GlobalVoxelPos FromPointInWorld(UnityEngine.Vector3 vector)
     {
-        GlobalVoxelPosition<float> globPos = new(
-            relPosition.X + VoxelData.ChunkWidth * chunkCoord.X,
-            relPosition.Y,
-            relPosition.Z + VoxelData.ChunkWidth * chunkCoord.Z);
+        GlobalVoxelPos globPos = new(
+            (int)Mathf.Floor(vector.x),
+            (int)Mathf.Floor(vector.y),
+            (int)Mathf.Floor(vector.z));
 
         return globPos;
     }
 
-    public static GlobalVoxelPosition<float> FromVector3(UnityEngine.Vector3 vector)
-    {
-        GlobalVoxelPosition<float> globPos = new(
-            vector.x,
-            vector.y,
-            vector.z);
-
-        return globPos;
-    }
 }
 
 

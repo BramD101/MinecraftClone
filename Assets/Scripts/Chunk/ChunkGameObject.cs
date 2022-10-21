@@ -32,7 +32,7 @@ public class ChunkGameObject
         _object.name = $"Chunk ({coord.X}, {coord.Z})";
     }
 
-    public void UpdateMesh(ChunkMeshDataDTO meshData)
+    public void UpdateMesh(ChunkMeshData meshData)
     {
         var mesh = new Mesh();
         mesh.SetVertices(meshData.Vertices.ToArray());

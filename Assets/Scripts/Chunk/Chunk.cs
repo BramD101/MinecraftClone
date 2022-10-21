@@ -20,13 +20,12 @@ public class Chunk
         ChunkCoord = chunkCoord;
     }
 
-    public void UpdateMesh(ChunkMeshDataDTO meshData, GameSettings gameSettings, Transform worldTransform)
+    public void UpdateMesh(ChunkMeshData meshData, GameSettings gameSettings, Transform worldTransform)
     {
         if(_gameObject == null)
         {
             _gameObject = new ChunkGameObject(gameSettings,worldTransform, ChunkCoord);
         }
-
         _gameObject.UpdateMesh(meshData);
         RenderStatus = RenderStatus.UpToDate;
     }
@@ -40,11 +39,11 @@ public class Chunk
     {
         return _map.TrySetMap(map);
     }
-    public Voxel GetVoxel(RelativeToChunkVoxelPosition<int> relPos)
+    public Voxel GetVoxel(RelativeVoxelPos relPos)
     {
         return _map.GetVoxel(relPos);
     }
-    public bool TryGetVoxel(RelativeToChunkVoxelPosition<int> relPos, out Voxel voxel)
+    public bool TryGetVoxel(RelativeVoxelPos relPos, out Voxel voxel)
     {
         return _map.TryGetVoxel(relPos, out voxel);
     }
@@ -64,7 +63,14 @@ public class Chunk
         return RenderStatus == RenderStatus.UpToDate;
     }
 
-    
+    internal bool IsVoxelSolid(RelativeVoxelPos relPos)
+    {
+        if(TryGetVoxel(relPos,out Voxel voxel))
+        {
+            return voxel.IsSolid;
+        }
+        return false;
+    }
 }
 public enum RenderStatus
 {

@@ -46,23 +46,23 @@ public class VoxelTypeData : ScriptableObject
     [SerializeField]
     private int _rightFaceTexture;
 
-    public int GetTextureID(Direction direction)
+    public int GetTextureID(VoxelDirection direction)
     {
 
         switch (direction)
         {
 
-            case Direction.LowerZ:
+            case VoxelDirection.LowerZ:
                 return _backFaceTexture;
-            case Direction.HigherZ:
+            case VoxelDirection.HigherZ:
                 return _frontFaceTexture;
-            case Direction.LowerY:
+            case VoxelDirection.LowerY:
                 return _topFaceTexture;
-            case Direction.HigherY:
+            case VoxelDirection.HigherY:
                 return _bottomFaceTexture;
-            case Direction.LowerX:
+            case VoxelDirection.LowerX:
                 return _leftFaceTexture;
-            case Direction.HigherX:
+            case VoxelDirection.HigherX:
                 return _rightFaceTexture;
             default:
                 Debug.Log("Error in GetTextureID; invalid face index");

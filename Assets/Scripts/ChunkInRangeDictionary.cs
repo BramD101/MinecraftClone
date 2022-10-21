@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 
-public class ChunkInRangeDictionary
+public class ChunkInRangeDictionary 
 {
     private readonly SortedDictionary<ChunkCoord, Chunk> _chunksInDistance = new();
-
-
     private readonly Action<Chunk> _disposeMethod;
     private readonly int _distance;
+    private readonly object _isUpdatingLock = new();
 
-    public List<Chunk>  Chunks => _chunksInDistance.Values.ToList<Chunk>();
+    public List<Chunk> Chunks => _chunksInDistance.Values.ToList<Chunk>();
     public List<ChunkCoord> ChunksCoords => _chunksInDistance.Keys.ToList<ChunkCoord>();
     public ChunkInRangeDictionary(Action<Chunk> disposeMethod, int distance)
     {
@@ -18,58 +17,62 @@ public class ChunkInRangeDictionary
         _distance = distance;
     }
 
- 
+
     public void UpdateChunksInDistance(ChunkCoord coord, Func<ChunkCoord, ValueTuple<Chunk, bool>> TryGetChunkFromRepo)
     {
 
-
-        Dictionary<ChunkCoord, Chunk> oldChunks = new(_chunksInDistance);
-        _chunksInDistance.Clear();
-
-        for (int i = coord.X - _distance; i <= coord.X + _distance; i++)
+        lock (_isUpdatingLock)
         {
-            for (int j = coord.Z - _distance; j <= coord.Z + _distance; j++)
+            Dictionary<ChunkCoord, Chunk> oldChunks = new(_chunksInDistance);
+            _chunksInDistance.Clear();
+
+            for (int i = coord.X - _distance; i <= coord.X + _distance; i++)
             {
-                ChunkCoord currentChunkCoord = new(i, j);
-
-                if (oldChunks.TryGetValue(currentChunkCoord, out Chunk newChunk))
+                for (int j = coord.Z - _distance; j <= coord.Z + _distance; j++)
                 {
-                    oldChunks.Remove(currentChunkCoord);
-                }
-                else
-                {
-                    bool success;
-                    (newChunk, success) = TryGetChunkFromRepo(currentChunkCoord);
+                    ChunkCoord currentChunkCoord = new(i, j);
 
-                    if (!success)
+                    if (oldChunks.TryGetValue(currentChunkCoord, out Chunk newChunk))
                     {
-                        newChunk = new Chunk(currentChunkCoord);
+                        oldChunks.Remove(currentChunkCoord);
                     }
+                    else
+                    {
+                        bool success;
+                        (newChunk, success) = TryGetChunkFromRepo(currentChunkCoord);
+
+                        if (!success)
+                        {
+                            newChunk = new Chunk(currentChunkCoord);
+                        }
+                    }
+                    _chunksInDistance.Add(currentChunkCoord, newChunk);
                 }
-                _chunksInDistance.Add(currentChunkCoord, newChunk);
+
             }
 
+
+            foreach (Chunk chunk in oldChunks.Values)
+            {
+                _disposeMethod(chunk);
+            }
         }
-
-
-        foreach (Chunk chunk in oldChunks.Values)
-        {
-            _disposeMethod(chunk);
-        }
-
     }
 
     public bool TryGetChunk(ChunkCoord chunkCoord, out Chunk outChunk)
     {
-        if (_chunksInDistance.ContainsKey(chunkCoord))
+        lock (_isUpdatingLock)
         {
-            outChunk = _chunksInDistance[chunkCoord];
-            return true;
+            if (_chunksInDistance.ContainsKey(chunkCoord))
+            {
+                outChunk = _chunksInDistance[chunkCoord];
+                return true;
+            }
         }
         outChunk = null;
         return false;
     }
 
-   
+
 }
 

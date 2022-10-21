@@ -22,7 +22,7 @@ public static class VoxelData {
 
     }
 
-	public static bool IsVoxelInWorld(GlobalVoxelPosition<int> pos)
+	public static bool IsVoxelInWorld(GlobalVoxelPos pos)
 	{		
 		bool isXInWorld = pos.X < WorldSizeInChunks / 2 * ChunkWidth;
         bool isYInWorld = pos.Y >= 0 && pos.Y <= ChunkHeight;

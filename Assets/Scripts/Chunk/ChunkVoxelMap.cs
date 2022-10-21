@@ -16,7 +16,7 @@ public class ChunkVoxelMap
             _voxelModBacklog.Enqueue(result);
         }
     }
-    public Voxel GetVoxel(RelativeToChunkVoxelPosition<int> pos)
+    public Voxel GetVoxel(RelativeVoxelPos pos)
     {
         if (!IsInVoxelMap(pos))
         {
@@ -27,7 +27,7 @@ public class ChunkVoxelMap
 
         return new Voxel(voxel, GameSettings.Blocktypes[(int)voxel.Type]);
     }
-    public bool TryGetVoxel(RelativeToChunkVoxelPosition<int> relPos, out Voxel voxel)
+    public bool TryGetVoxel(RelativeVoxelPos relPos, out Voxel voxel)
     {
         if(!IsInVoxelMap(relPos))
         {
@@ -55,13 +55,13 @@ public class ChunkVoxelMap
 
         while (_voxelModBacklog.TryDequeue(out VoxelMod mod))
         {
-            RelativeToChunkVoxelPosition<int> relPos = RelativeToChunkVoxelPosition<int>.CreateFromGlobal(mod.GlobalVoxelPosition);
+            RelativeVoxelPos relPos = RelativeVoxelPos.CreateFromGlobal(mod.GlobalVoxelPosition);
             _map[relPos.X, relPos.Y, relPos.Z].Type = mod.NewVoxelType;
         }
         return true;
     }
 
-    public static bool IsInVoxelMap(RelativeToChunkVoxelPosition<int> pos)
+    public static bool IsInVoxelMap(RelativeVoxelPos pos)
     {
         return pos.X >= 0 && pos.X < VoxelData.ChunkWidth
             && pos.Y >= 0 && pos.Y < VoxelData.ChunkHeight
@@ -73,7 +73,7 @@ public class ChunkVoxelMap
 
 public struct VoxelMod
 {
-    public GlobalVoxelPosition<int> GlobalVoxelPosition { get; set; }
+    public GlobalVoxelPos GlobalVoxelPosition { get; set; }
     public VoxelType NewVoxelType { get; set; }
 }
 
