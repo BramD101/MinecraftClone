@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-public class ChunkInRangeDictionary 
+public class ChunkInRangeDictionary : IChunkRepository
 {
     private readonly SortedDictionary<ChunkCoord, Chunk> _chunksInDistance = new();
     private readonly Action<Chunk> _disposeMethod;
@@ -18,7 +18,7 @@ public class ChunkInRangeDictionary
     }
 
 
-    public void UpdateChunksInDistance(ChunkCoord coord, Func<ChunkCoord, ValueTuple<Chunk, bool>> TryGetChunkFromRepo)
+    public void UpdateChunksInDistance(ChunkCoord coord, IChunkRepository chunkRepository)
     {
 
         lock (_isUpdatingLock)
@@ -38,8 +38,7 @@ public class ChunkInRangeDictionary
                     }
                     else
                     {
-                        bool success;
-                        (newChunk, success) = TryGetChunkFromRepo(currentChunkCoord);
+                        var success = chunkRepository.TryGetChunk(currentChunkCoord, out newChunk);
 
                         if (!success)
                         {
