@@ -33,11 +33,7 @@ public static class Structure
             height = minTrunkHeight;
 
         for (int i = 1; i < height; i++)
-            queue.Enqueue(new VoxelMod
-            {
-                GlobalVoxelPosition = new GlobalVoxelPos(position.X, position.Y + i, position.Z),
-                NewVoxelType = VoxelType.Wood
-            });
+            queue.Enqueue(new VoxelMod(new GlobalVoxelPos(position.X, position.Y + i, position.Z), VoxelType.Wood));
 
         for (int x = -3; x < 4; x++)
         {
@@ -45,11 +41,7 @@ public static class Structure
             {
                 for (int z = -3; z < 4; z++)
                 {
-                    queue.Enqueue(new VoxelMod
-                    {
-                        GlobalVoxelPosition = new GlobalVoxelPos(position.X + x, position.Y + height + y, position.Z + z),
-                        NewVoxelType = VoxelType.Leaves
-                    });
+                    queue.Enqueue(new VoxelMod(new GlobalVoxelPos(position.X + x, position.Y + height + y, position.Z + z), VoxelType.Leaves));
                 }
             }
         }
@@ -69,18 +61,10 @@ public static class Structure
 
         for (int i = 1; i < height; i++)
         {
-            queue.Enqueue(new VoxelMod
-            {
-                GlobalVoxelPosition = new GlobalVoxelPos(position.X, position.Y + i, position.Z),
-                NewVoxelType = VoxelType.Cactus
-            });
+            queue.Enqueue(new VoxelMod(new GlobalVoxelPos(position.X, position.Y + i, position.Z), VoxelType.Cactus));
         }
-        queue.Enqueue(new VoxelMod
-        {
-            GlobalVoxelPosition = new GlobalVoxelPos(position.X, position.Y + height, position.Z),
-            NewVoxelType = VoxelType.CactusTop
-        });
-
+        queue.Enqueue(new VoxelMod(new GlobalVoxelPos(position.X, position.Y + height, position.Z), VoxelType.CactusTop));
+     
         return queue;
 
     }

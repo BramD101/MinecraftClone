@@ -16,7 +16,7 @@ public class RelativeVoxelPos
     {
         return new RelativeVoxelPos(vector.x, vector.y, vector.z);
     }
-    public static RelativeVoxelPos CreateFromGlobal(GlobalVoxelPos globalPosition)
+    public static RelativeVoxelPos FromGlobal(GlobalVoxelPos globalPosition)
     {
         RelativeVoxelPos relPos = new(
             ((globalPosition.X % VoxelData.ChunkWidth) + VoxelData.ChunkWidth) % VoxelData.ChunkWidth,

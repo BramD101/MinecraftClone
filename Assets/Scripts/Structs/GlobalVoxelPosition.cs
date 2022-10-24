@@ -13,7 +13,7 @@ public struct GlobalVoxelPos
         Z = z;
     }
 
-    public static GlobalVoxelPos FromRelativeToChunkPosition(RelativeVoxelPos relPosition, ChunkCoord chunkCoord)
+    public static GlobalVoxelPos FromRelativePosition(RelativeVoxelPos relPosition, ChunkCoord chunkCoord)
     {
         GlobalVoxelPos globPos = new(
             relPosition.X + VoxelData.ChunkWidth * chunkCoord.X,

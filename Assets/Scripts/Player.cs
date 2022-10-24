@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -33,7 +32,7 @@ public class Player : MonoBehaviour
     {
         get
         {
-            
+
             GlobalVoxelPos pos = GlobalVoxelPos.FromPointInWorld(
                 _playerGameObject.transform.position
                 + new Vector3(0, -2.0f * Settings.BoundsTolerance, 0)
@@ -42,19 +41,21 @@ public class Player : MonoBehaviour
         }
     }
 
-
     public ChunkCoord PlayerChunkCoord
     {
         get { return _playerChunkCoord; }
         private set
         {
             _playerChunkCoord = value;
-            OnPlayerMovedChunks();
+            if (_playerGameObject.activeSelf)
+            {
+                OnPlayerMovedChunks();
+            }
         }
     }
 
 
-    public GlobalVoxelPos GlobalVoxelPosition
+    public GlobalVoxelPos PlayerVoxelPosition
     {
         get
         {
@@ -65,29 +66,25 @@ public class Player : MonoBehaviour
     private void Start()
     {
         _playerGameObject = GameObject.Find("Player");
-        _playerGameObject.transform.position = new Vector3(0, VoxelData.ChunkHeight, 0);
         _playerGameObject.SetActive(false);
-        PlayerChunkCoord = ChunkCoord.FromGlobalVoxelPosition(GlobalVoxelPosition);
+        _playerGameObject.transform.position = new Vector3(0, VoxelData.ChunkHeight, 0);
+        
+        PlayerChunkCoord = ChunkCoord.FromGlobalVoxelPosition(PlayerVoxelPosition);
     }
     private void Update()
     {
-        var startTime = Time.realtimeSinceStartup;
-
-       
-        ChunkCoord playerChunkCoord = ChunkCoord.FromGlobalVoxelPosition(GlobalVoxelPosition);
+        ChunkCoord playerChunkCoord = ChunkCoord.FromGlobalVoxelPosition(PlayerVoxelPosition);
 
         if (!PlayerChunkCoord.Equals(playerChunkCoord))
         {
             PlayerChunkCoord = playerChunkCoord;
         }
         PlaceCursorBlocks();
-        Debug.Log("Player.Update" + (Time.realtimeSinceStartup - startTime) * 1000 + "ms");
     }
     [SerializeField]
     private float _verticalVelocity = 0.0f;
     private void FixedUpdate()
     {
-        var startTime = Time.realtimeSinceStartup;
         Vector3 currentPos = transform.position;
 
         // acceleration
@@ -99,15 +96,15 @@ public class Player : MonoBehaviour
             _verticalVelocity = Mathf.Max(0, _verticalVelocity);
         }
 
-        var movementSpeed = _isSprinting ? Settings.SprintSpeed : Settings.WalkSpeed;
+        float movementSpeed = _isSprinting ? Settings.SprintSpeed : Settings.WalkSpeed;
         // player inputs (Add with infinite acceleration)
         Vector3 proposedMovement =
-            (((transform.forward * _movementDirection.y) + (transform.right * _movementDirection.x)) * movementSpeed
-            + _verticalVelocity * _worldTransform.up) * Time.fixedDeltaTime;
+            ((((transform.forward * _movementDirection.y) + (transform.right * _movementDirection.x)) * movementSpeed)
+            + (_verticalVelocity * _worldTransform.up)) * Time.fixedDeltaTime;
 
         // collision detection with chunks
 
-        var allowedMovement = MaxAllowedMovement(proposedMovement);
+        Vector3 allowedMovement = MaxAllowedMovement(proposedMovement);
         if (allowedMovement.magnitude < proposedMovement.magnitude)
         {
             List<Vector3> allowedRemainingPrincipalMovementList = new();
@@ -124,8 +121,6 @@ public class Player : MonoBehaviour
 
         _verticalVelocity = proposedMovement.y / Time.fixedDeltaTime;
         transform.Translate(proposedMovement, _worldTransform);
-
-        Debug.Log("Player.FixedUpdate" + (Time.realtimeSinceStartup - startTime) * 1000 + "ms");
     }
 
     private Vector3 MaxAllowedMovement(Vector3 proposedMovement)
@@ -138,8 +133,8 @@ public class Player : MonoBehaviour
             }
             else
             {
-                proposedMovement = (proposedMovement) / 2.0f;
-                if ((proposedMovement).magnitude < Settings.BoundsTolerance)
+                proposedMovement = proposedMovement / 2.0f;
+                if (proposedMovement.magnitude < Settings.BoundsTolerance)
                 {
                     proposedMovement = Vector3.zero;
                     break;
@@ -153,10 +148,10 @@ public class Player : MonoBehaviour
 
     private void PlaceCursorBlocks()
     {
-        var checkIncrement = 0.1f;
+        float checkIncrement = 0.1f;
 
         float step = checkIncrement;
-        Vector3 lastPos = new Vector3();
+        Vector3 lastPos = new();
 
         while (step < Settings.Reach)
         {
@@ -233,9 +228,22 @@ public class Player : MonoBehaviour
     private bool _isSprinting = false;
     public void OnSprint(InputAction.CallbackContext context)
     {
-        var isSprinting = context.ReadValue<float>();
+        float isSprinting = context.ReadValue<float>();
 
         _isSprinting = isSprinting > 0;
+    }
+
+    public void OnPlaceBlock(InputAction.CallbackContext context)
+    {
+        if (!_placeBlock.gameObject.activeSelf)
+            return;
+
+        if (context.phase != InputActionPhase.Performed)
+            return;
+
+        GlobalVoxelPos placeBlockPosition = GlobalVoxelPos.FromPointInWorld(PlaceBlock.position);
+
+        LoadedWorld.SetBlock(placeBlockPosition, VoxelType.Dirt);
     }
 }
 

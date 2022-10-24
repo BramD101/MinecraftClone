@@ -38,15 +38,7 @@ public class Chunk
     public bool TrySetVoxelMap(VoxelMinimal[,,] map)
     {
         return _map.TrySetMap(map);
-    }
-    public Voxel GetVoxel(RelativeVoxelPos relPos)
-    {
-        return _map.GetVoxel(relPos);
-    }
-    public bool TryGetVoxel(RelativeVoxelPos relPos, out Voxel voxel)
-    {
-        return _map.TryGetVoxel(relPos, out voxel);
-    }
+    } 
 
     public void EnqueueVoxelMods(Queue<VoxelMod> voxelMods)
     {
@@ -64,12 +56,19 @@ public class Chunk
     }
 
     internal bool IsVoxelSolid(RelativeVoxelPos relPos)
+    {      
+        return _map.IsVoxelSolid(relPos);
+    }
+
+    public void SetVoxel(GlobalVoxelPos globPos, VoxelType type)
     {
-        if(TryGetVoxel(relPos,out Voxel voxel))
-        {
-            return voxel.IsSolid;
-        }
-        return false;
+        _map.QueueVoxel(globPos, type);
+        RenderStatus = RenderStatus.NotUpToDate;
+    }
+
+    public bool RenderNeighborFaces(RelativeVoxelPos relativeVoxelPos)
+    {
+        return _map.RenderNeighborFaces(relativeVoxelPos);
     }
 }
 public enum RenderStatus

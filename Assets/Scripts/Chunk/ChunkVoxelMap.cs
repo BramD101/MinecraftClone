@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 public class ChunkVoxelMap
@@ -6,7 +7,8 @@ public class ChunkVoxelMap
     public static GameSettings GameSettings { get; set; }
 
     private VoxelMinimal[,,] _map = null;
-    private readonly Queue<VoxelMod> _voxelModBacklog = new();
+    private readonly ConcurrentQueue<VoxelMod> _voxelModBacklog = new();
+    
     public bool IsFilledIn => _map != null;
 
     public void EnqueueVoxelMods(Queue<VoxelMod> voxelMods)
@@ -16,28 +18,37 @@ public class ChunkVoxelMap
             _voxelModBacklog.Enqueue(result);
         }
     }
-    public Voxel GetVoxel(RelativeVoxelPos pos)
+
+    private VoxelTypeData GetVoxelTypeData(RelativeVoxelPos pos)
     {
-        if (!IsInVoxelMap(pos))
-        {
-            throw new System.Exception($"Not in voxelmap: {pos.X},{pos.Y},{pos.Z}");
-        }
-
-        VoxelMinimal voxel = _map[pos.X, pos.Y, pos.Z];     
-
-        return new Voxel(voxel, GameSettings.Blocktypes[(int)voxel.Type]);
+        return GameSettings.Blocktypes[(int)_map[pos.X, pos.Y, pos.Z].Type];
     }
-    public bool TryGetVoxel(RelativeVoxelPos relPos, out Voxel voxel)
-    {
-        if(!IsInVoxelMap(relPos))
-        {
-            voxel = null;
-            return false;
-        }
 
-        voxel = GetVoxel(relPos);
-        return true;
-    }
+    //public Voxel GetVoxel(RelativeVoxelPos pos)
+    //{
+    //    if (!IsInVoxelMap(pos))
+    //    {
+    //        throw new System.Exception($"Not in voxelmap: {pos.X},{pos.Y},{pos.Z}");
+    //    }
+
+    //    VoxelMinimal voxel = _map[pos.X, pos.Y, pos.Z];
+
+    //    return new Voxel(voxel, GameSettings.Blocktypes[(int)voxel.Type]);
+    //}
+
+
+
+    //public bool TryGetVoxel(RelativeVoxelPos relPos, out Voxel voxel)
+    //{
+    //    if (!IsInVoxelMap(relPos))
+    //    {
+    //        voxel = null;
+    //        return false;
+    //    }
+
+    //    voxel = GetVoxel(relPos);
+    //    return true;
+    //}
 
     public bool TrySetMap(VoxelMinimal[,,] map)
     {
@@ -55,7 +66,7 @@ public class ChunkVoxelMap
 
         while (_voxelModBacklog.TryDequeue(out VoxelMod mod))
         {
-            RelativeVoxelPos relPos = RelativeVoxelPos.CreateFromGlobal(mod.GlobalVoxelPosition);
+            RelativeVoxelPos relPos = mod.RelativeVoxelPos;
             _map[relPos.X, relPos.Y, relPos.Z].Type = mod.NewVoxelType;
         }
         return true;
@@ -68,12 +79,63 @@ public class ChunkVoxelMap
             && pos.Z >= 0 && pos.Z < VoxelData.ChunkWidth;
     }
 
-    
+    public void QueueVoxel(GlobalVoxelPos globPos, VoxelType type)
+    {
+        _voxelModBacklog.Enqueue(new VoxelMod(globPos,type) );
+    }
+
+    public bool IsVoxelSolid(RelativeVoxelPos relPos)
+    {
+        return GetVoxelTypeData(relPos).IsSolid;
+    }
+
+    public bool IsVoxelWater(RelativeVoxelPos relPos)
+    {
+        return GetVoxelTypeData(relPos).IsWater;
+    }
+
+    public VoxelMeshData GetMeshData(RelativeVoxelPos relPos)
+    {
+        return GetVoxelTypeData(relPos).MeshData;
+    }
+
+    public bool RenderNeighborFaces(RelativeVoxelPos relPos)
+    {
+        return GetVoxelTypeData(relPos).RenderNeighborFaces;
+    }
+
+    public int GetTextureID(RelativeVoxelPos relPos, VoxelDirection p)
+    {
+        return GetVoxelTypeData(relPos).GetTextureID(p);
+    }
 }
 
 public struct VoxelMod
 {
-    public GlobalVoxelPos GlobalVoxelPosition { get; set; }
+    public ChunkCoord ChunkCoord { get; private set; }
+    public RelativeVoxelPos RelativeVoxelPos { get; private set; }
+
+    public GlobalVoxelPos GlobalVoxelPos
+    {
+        get
+        {
+            return GlobalVoxelPos.FromRelativePosition(RelativeVoxelPos, ChunkCoord);
+        }
+    }
     public VoxelType NewVoxelType { get; set; }
+
+
+    public VoxelMod(GlobalVoxelPos globVoxelPos, VoxelType newVoxelType)
+    {
+        ChunkCoord = ChunkCoord.FromGlobalVoxelPosition(globVoxelPos);
+        RelativeVoxelPos = RelativeVoxelPos.FromGlobal(globVoxelPos);
+        NewVoxelType = newVoxelType;
+    }
+    public VoxelMod(ChunkCoord chunkCoord, RelativeVoxelPos relativeVoxelPos, VoxelType newVoxelType)
+    {
+        ChunkCoord = chunkCoord;
+        RelativeVoxelPos = relativeVoxelPos;
+        NewVoxelType = newVoxelType;
+    }
 }
 

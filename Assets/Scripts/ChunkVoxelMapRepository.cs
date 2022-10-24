@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
-using TMPro;
-
-public class ChunkVoxelMapRepository
+﻿public class ChunkVoxelMapRepository
 {
-    private WorldGenerator _worldGenerator;
+    private readonly WorldGenerator _worldGenerator;
     public ChunkVoxelMapRepository(WorldGenerator worldGenerator)
     {
         _worldGenerator = worldGenerator;

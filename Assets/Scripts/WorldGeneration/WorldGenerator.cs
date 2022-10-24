@@ -23,7 +23,7 @@ public class WorldGenerator
                 for (int z = 0; z < VoxelData.ChunkWidth; z++)
                 {
                     RelativeVoxelPos relativeVoxelPositing = new(x, y, z);
-                    GlobalVoxelPos globPos = GlobalVoxelPos.FromRelativeToChunkPosition(relativeVoxelPositing, coord);
+                    GlobalVoxelPos globPos = GlobalVoxelPos.FromRelativePosition(relativeVoxelPositing, coord);
 
 
                     Queue<VoxelMod> structure;
@@ -31,7 +31,7 @@ public class WorldGenerator
 
                     foreach (VoxelMod mod in structure)
                     {
-                        ChunkCoord currentChunk = ChunkCoord.FromGlobalVoxelPosition(mod.GlobalVoxelPosition);
+                        ChunkCoord currentChunk = mod.ChunkCoord;
 
                         if (!voxelModifications.ContainsKey(currentChunk))
                         {

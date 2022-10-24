@@ -8,7 +8,6 @@ public static class VoxelData {
     public static readonly int ChunkHeight = 128;
     //public static readonly int ChunkWidth = 2;
     //public static readonly int ChunkHeight = 2;
-    public static readonly int WorldSizeInChunks = 100;
 	
 	// Lighting Values
     public static float minLightLevel = 0.1f;
@@ -24,29 +23,14 @@ public static class VoxelData {
 
 	public static bool IsVoxelInWorld(GlobalVoxelPos pos)
 	{		
-		bool isXInWorld = pos.X < WorldSizeInChunks / 2 * ChunkWidth;
-        bool isYInWorld = pos.Y >= 0 && pos.Y <= ChunkHeight;
-        bool isZInWorld = pos.Z < WorldSizeInChunks / 2 * ChunkWidth;
-
-		return isXInWorld && isYInWorld && isZInWorld;
+        bool isYInWorld = pos.Y >= 0 && pos.Y < ChunkHeight;
+		return isYInWorld;
     }
 
     public static float tickLength = 1f;
 
     public static int seed;
-
-    public static int WorldCentre {
-
-        get { return (WorldSizeInChunks * ChunkWidth) / 2; }
-
-    }
-
-    public static int WorldSizeInVoxels {
-
-        get { return WorldSizeInChunks * ChunkWidth; }
-
-    }
-
+	   
     public static readonly int TextureAtlasSizeInBlocks = 16;
     public static float NormalizedBlockTextureSize {
 
